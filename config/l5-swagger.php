@@ -90,7 +90,10 @@ return [
             ],
         ],
         'constants' => [
-            'L5_SWAGGER_CONST_HOST' => env('L5_SWAGGER_CONST_HOST', 'http://localhost:8001'),
+            'L5_SWAGGER_CONST_HOST' => env('L5_SWAGGER_CONST_HOST', 'https://gestioncompteslaravel.onrender.com'),
         ],
+        
+        // Force HTTPS for assets
+        'asset_url' => env('ASSET_URL', 'https://gestioncompteslaravel.onrender.com'),
     ],
 ];
