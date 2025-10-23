@@ -16,6 +16,20 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use OpenApi\Annotations as OA;
+
+/**
+ * @OA\Info(
+ *     version="1.0.0",
+ *     title="Gestion des Comptes API",
+ *     description="API pour la gestion des comptes bancaires"
+ * )
+ * 
+ * @OA\Server(
+ *     url="https://gestioncompteslaravel.onrender.com",
+ *     description="Production Server"
+ * )
+ */
 
 
 class CompteController extends Controller
@@ -28,6 +42,24 @@ class CompteController extends Controller
     {
         $this->compteService = $compteService;
     }
+    /**
+     * @OA\Get(
+     *     path="/api/v1/comptes",
+     *     tags={"Comptes"},
+     *     summary="Liste tous les comptes",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Liste des comptes récupérée avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Liste des comptes récupérée avec succès"),
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Compte")),
+     *             @OA\Property(property="pagination", ref="#/components/schemas/Pagination")
+     *         )
+     *     ),
+     *     security={{"bearerAuth": {}}}
+     * )
+     */
     public function index(Request $request): JsonResponse
     {
         $user = $request->attributes->get('user');
@@ -46,6 +78,41 @@ class CompteController extends Controller
         );
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/comptes",
+     *     tags={"Comptes"},
+     *     summary="Crée un nouveau compte",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"type","soldeInitial","solde","devise"},
+     *             @OA\Property(property="type", type="string", enum={"courant", "epargne"}),
+     *             @OA\Property(property="soldeInitial", type="number", format="float"),
+     *             @OA\Property(property="solde", type="number", format="float"),
+     *             @OA\Property(property="devise", type="string", enum={"XOF", "EUR", "USD"}),
+     *             @OA\Property(property="client", type="object",
+     *                 @OA\Property(property="id", type="integer"),
+     *                 @OA\Property(property="titulaire", type="string"),
+     *                 @OA\Property(property="nci", type="string"),
+     *                 @OA\Property(property="email", type="string"),
+     *                 @OA\Property(property="telephone", type="string"),
+     *                 @OA\Property(property="adresse", type="string")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Compte créé avec succès",
+     *         @OA\JsonContent(ref="#/components/schemas/CompteResponse")
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Données invalides"
+     *     ),
+     *     security={{"bearerAuth": {}}}
+     * )
+     */
     public function store(StoreCompteRequest $request): JsonResponse
     {
         try {

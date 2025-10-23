@@ -69,9 +69,11 @@ if [ "$APP_ENV" = "production" ]; then
     php artisan view:cache
 fi
 
-# Exécuter les migrations
+# Exécuter les migrations et les seeders
 echo "Running migrations..."
 php artisan migrate --force || echo "Migration failed, continuing..."
+echo "Running seeders..."
+php artisan db:seed --force || echo "Seeding failed, continuing..."
 
 # Générer la documentation Swagger
 echo "Generating Swagger documentation..."
