@@ -20,6 +20,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+// Health check route
+Route::get('/health', function() {
+    return response()->json(['status' => 'ok']);
+});
+
 // Version 1 API routes
 Route::prefix('v1')->middleware(['fake.auth', 'rating'])->group(function () {
     /**
