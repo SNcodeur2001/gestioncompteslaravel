@@ -8,106 +8,11 @@ use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-/**
- * @OA\Tag(
- *     name="Comptes Archivés",
- *     description="Gestion des comptes archivés"
- * )
- */
 
 class CompteArchiveController extends Controller
 {
     use ApiResponse;
 
-    /**
-     * @OA\Get(
-     *     path="/comptes/archives",
-     *     tags={"Comptes Archivés"},
-     *     summary="Lister tous les comptes archivés",
-     *     description="La consultation de compte Epargne archiver se fait a partir du cloud",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(
-     *         name="page",
-     *         in="query",
-     *         description="Numéro de page",
-     *         required=false,
-     *         @OA\Schema(type="integer", default=1)
-     *     ),
-     *     @OA\Parameter(
-     *         name="limit",
-     *         in="query",
-     *         description="Nombre d'éléments par page",
-     *         required=false,
-     *         @OA\Schema(type="integer", default=10, maximum=100)
-     *     ),
-     *     @OA\Parameter(
-     *         name="type",
-     *         in="query",
-     *         description="Type de compte (epargne, cheque, courant)",
-     *         required=false,
-     *         @OA\Schema(type="string", enum={"epargne", "cheque", "courant"})
-     *     ),
-     *     @OA\Parameter(
-     *         name="statut",
-     *         in="query",
-     *         description="Statut du compte (actif, bloque, ferme)",
-     *         required=false,
-     *         @OA\Schema(type="string", enum={"actif", "bloque", "ferme"})
-     *     ),
-     *     @OA\Parameter(
-     *         name="search",
-     *         in="query",
-     *         description="Recherche par numéro de compte ou titulaire",
-     *         required=false,
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="sort",
-     *         in="query",
-     *         description="Champ de tri",
-     *         required=false,
-     *         @OA\Schema(type="string", enum={"dateCreation", "solde", "titulaire"})
-     *     ),
-     *     @OA\Parameter(
-     *         name="order",
-     *         in="query",
-     *         description="Ordre de tri",
-     *         required=false,
-     *         @OA\Schema(type="string", enum={"asc", "desc"}, default="desc")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Liste des comptes archivés récupérée avec succès",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Liste des comptes archivés récupérée avec succès"),
-     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Compte")),
-     *             @OA\Property(property="pagination", type="object",
-     *                 @OA\Property(property="currentPage", type="integer", example=1),
-     *                 @OA\Property(property="totalPages", type="integer", example=3),
-     *                 @OA\Property(property="totalItems", type="integer", example=25),
-     *                 @OA\Property(property="itemsPerPage", type="integer", example=10),
-     *                 @OA\Property(property="hasNext", type="boolean", example=true),
-     *                 @OA\Property(property="hasPrevious", type="boolean", example=false)
-     *             ),
-     *             @OA\Property(property="links", type="object",
-     *                 @OA\Property(property="self", type="string", example="http://localhost:8001/api/v1/comptes/archives?page=1"),
-     *                 @OA\Property(property="next", type="string", example="http://localhost:8001/api/v1/comptes/archives?page=2"),
-     *                 @OA\Property(property="first", type="string", example="http://localhost:8001/api/v1/comptes/archives?page=1"),
-     *                 @OA\Property(property="last", type="string", example="http://localhost:8001/api/v1/comptes/archives?page=3")
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=401,
-     *         description="Non autorisé",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Non autorisé")
-     *         )
-     *     )
-     * )
-     */
     public function index(Request $request): JsonResponse
     {
         // Récupérer les comptes archivés (sans le scope global)
