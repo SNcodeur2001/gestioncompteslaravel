@@ -20,9 +20,11 @@ WORKDIR /var/www/html
 # Installation de Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copier les fichiers de l'application
-COPY . .
-COPY .env.production .env.production
+# Copier les fichiers de l'application avec les bonnes permissions
+COPY --chown=www-data:www-data . .
+
+# Vérifier la présence des fichiers essentiels
+RUN ls -la public/index.php || (echo "index.php not found" && exit 1)
 
 # Installer les dépendances de Composer
 RUN composer install --no-dev --optimize-autoloader --no-scripts

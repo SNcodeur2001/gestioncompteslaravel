@@ -5,6 +5,14 @@ chmod -R 775 /var/www/html/storage
 chmod -R 775 /var/www/html/bootstrap/cache
 chown -R www-data:www-data /var/www/html
 
+# Vérifier si nous sommes dans /var/www/html
+if [ ! -d "/var/www/html" ]; then
+    echo "Error: /var/www/html directory not found"
+    exit 1
+fi
+
+cd /var/www/html
+
 # Copier le fichier .env.production vers .env si en production
 if [ "$APP_ENV" = "production" ]; then
     echo "Setting up production environment..."
@@ -13,6 +21,7 @@ if [ "$APP_ENV" = "production" ]; then
         echo "Copied .env.production to .env"
     else
         echo "Warning: .env.production not found"
+        ls -la
     fi
 fi
 
