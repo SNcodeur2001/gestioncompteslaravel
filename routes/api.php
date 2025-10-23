@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CompteArchiveController;
 use App\Http\Controllers\CompteController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -20,12 +21,29 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 // Version 1 API routes
-Route::prefix('v1')->group(function () {
-    Route::apiResource('comptes', CompteController::class)->only(['index', 'store', 'show']);
+Route::prefix('v1')->middleware(['fake.auth', 'rating'])->group(function () {
+    /**
+     * Lister tous les comptes
+     * Admin peut récupérer la liste de tous les comptes
+     * Client peut récupérer la liste de ses comptes
+     * Liste compte non supprimés type cheque ou compte Epargne Actif
+     */
+    Route::get('comptes', [CompteController::class, 'index'])->name('comptes.index');
+
+    Route::apiResource('comptes', CompteController::class)->only(['store', 'show']);
 });
 
 // Client-specific routes
-Route::prefix('v1')->group(function () {
+Route::prefix('v1')->middleware(['fake.auth', 'rating'])->group(function () {
     Route::get('clients/{client}/comptes', [CompteController::class, 'clientComptes']);
     Route::get('clients/{client}/comptes/{compte}', [CompteController::class, 'clientCompte']);
+});
+
+// Archived comptes routes
+Route::prefix('v1')->middleware(['fake.auth', 'rating'])->group(function () {
+    /**
+     * Lister tous les comptes archivés
+     * La consultation de compte Epargne archiver se fait a partir du cloud
+     */
+    Route::get('comptes/archives', [CompteArchiveController::class, 'index'])->name('comptes.archives');
 });

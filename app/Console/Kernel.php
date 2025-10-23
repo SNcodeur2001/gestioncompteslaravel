@@ -12,7 +12,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Vérifier les comptes bloqués et les archiver vers Neon tous les jours à 2h du matin
+        $schedule->command('comptes:check-archived')
+                 ->dailyAt('02:00')
+                 ->withoutOverlapping()
+                 ->runInBackground();
     }
 
     /**

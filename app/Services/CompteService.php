@@ -11,6 +11,7 @@ class CompteService
 {
     /**
      * Get comptes for a specific client with optional filters
+     * Liste compte non supprimés type cheque ou compte Epargne Actif
      */
     public function getComptesByClient(Client $client, array $filters = []): LengthAwarePaginator
     {
@@ -30,7 +31,29 @@ class CompteService
     }
 
     /**
+     * Get comptes for a specific client by telephone
+     * Liste compte non supprimés type cheque ou compte Epargne Actif
+     */
+    public function getComptesByTelephone(string $telephone, array $filters = []): LengthAwarePaginator
+    {
+        $query = Compte::with('client')->client($telephone)->actifs();
+
+        // Apply filters
+        $this->applyFilters($query, $filters);
+
+        // Apply sorting
+        $this->applySorting($query, $filters);
+
+        // Apply pagination
+        $limit = min($filters['limit'] ?? 10, 100);
+        $page = $filters['page'] ?? 1;
+
+        return $query->paginate($limit, ['*'], 'page', $page);
+    }
+
+    /**
      * Get all comptes with optional filters
+     * Liste compte non supprimés type cheque ou compte Epargne Actif
      */
     public function getAllComptes(array $filters = []): LengthAwarePaginator
     {
@@ -50,11 +73,42 @@ class CompteService
     }
 
     /**
-     * Find a compte by ID
+     * Find a compte by ID (recherche étendue local + Neon)
      */
     public function findCompte(string $id): ?Compte
     {
-        return Compte::with('client')->find($id);
+        // 1. Chercher d'abord en local
+        $compte = Compte::with('client')->find($id);
+
+        if ($compte) {
+            return $compte;
+        }
+
+        // 2. Si pas trouvé, chercher dans Neon
+        $neonService = app(\App\Services\NeonTransferService::class);
+        $neonData = $neonService->findInNeon($id);
+
+        if ($neonData) {
+            return $this->formatNeonData($neonData);
+        }
+
+        return null;
+    }
+
+    /**
+     * Formater les données récupérées depuis Neon
+     */
+    private function formatNeonData(array $data): Compte
+    {
+        // Créer un objet Compte temporaire avec les données Neon
+        $compte = new Compte();
+        $compte->fill((array) $data['compte']);
+        $compte->client = new \App\Models\Client((array) $data['client']);
+
+        // Marquer comme provenant de Neon
+        $compte->from_neon = true;
+
+        return $compte;
     }
 
     /**
