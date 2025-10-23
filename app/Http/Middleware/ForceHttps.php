@@ -9,11 +9,12 @@ class ForceHttps
 {
     public function handle(Request $request, Closure $next)
     {
+        // Ne pas rediriger la documentation Swagger, les endpoints API, ni la route racine
+        if ($request->is('api/documentation*') || $request->is('docs/*') || $request->is('api/v1/*') || $request->is('/')) {
+            return $next($request);
+        }
+
         if (!$request->secure() && app()->environment('production')) {
-            // Ne pas rediriger les requêtes API
-            if ($request->is('api/*')) {
-                return $next($request);
-            }
             return redirect()->secure($request->getRequestUri());
         }
 

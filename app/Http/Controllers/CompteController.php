@@ -62,20 +62,28 @@ class CompteController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $user = $request->attributes->get('user');
+        try {
+            $role = $request->header('X-Role');
+            Log::info('Current role: ' . $role); // Pour déboguer
 
-        // Si l'utilisateur est un client, filtrer par ses comptes
-        if ($user->role === 'client') {
-            $comptes = $this->compteService->getComptesByTelephone($user->telephone, $request->all());
-        } else {
-            // Admin peut voir tous les comptes
-            $comptes = $this->compteService->getAllComptes($request->all());
+            $user = $request->attributes->get('user');
+
+            // Si l'utilisateur est un client, filtrer par ses comptes
+            if ($user->role === 'client') {
+                $comptes = $this->compteService->getComptesByTelephone($user->telephone, $request->all());
+            } else {
+                // Admin peut voir tous les comptes
+                $comptes = $this->compteService->getAllComptes($request->all());
+            }
+
+            return $this->paginatedResponse(
+                $comptes,
+                'Liste des comptes récupérée avec succès'
+            );
+        } catch (\Exception $e) {
+            Log::error('Error in CompteController@index: ' . $e->getMessage());
+            return $this->errorResponse($e->getMessage());
         }
-
-        return $this->paginatedResponse(
-            $comptes,
-            'Liste des comptes récupérée avec succès'
-        );
     }
 
     /**
