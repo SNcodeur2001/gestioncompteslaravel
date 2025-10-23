@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: gestioncomptes-api
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    envVars:
+      - key: APP_KEY
+        value: base64:WhegBkXqxRw3YQNiu/OQsA1+BqmnTaFfXLmLjL0Z9TM=
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: DB_CONNECTION
+        value: pgsql
+      # Configuration pour base de données distante existante
+      - key: DB_HOST
+        value: dpg-d3t6q16r433s73eb62gg-a.oregon-postgres.render.com
+      - key: DB_PORT
+        value: 5432
+      - key: DB_DATABASE
+        value: gescomptes
+      - key: DB_USERNAME
+        value: user
+      - key: DB_PASSWORD
+        value: 3fsFHbyNKCbVDtqeR0vHGxYOozUEnDsr
