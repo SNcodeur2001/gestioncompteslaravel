@@ -36,4 +36,12 @@ class Client extends Model
     {
         return $this->hasMany(Compte::class);
     }
+
+    /**
+     * Get the route key for the model.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'id'; // Already using 'id' which is UUID
+    }
 }
