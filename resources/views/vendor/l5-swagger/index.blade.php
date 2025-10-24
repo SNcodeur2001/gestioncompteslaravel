@@ -2,9 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <title>{{config('l5-swagger.documentations.'.$documentation.'.api.title')}}</title>
     <link rel="stylesheet" type="text/css" href="{{ config('app.env') === 'production' ? str_replace('http://', 'https://', l5_swagger_asset($documentation, 'swagger-ui.css')) : l5_swagger_asset($documentation, 'swagger-ui.css') }}">

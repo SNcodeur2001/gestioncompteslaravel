@@ -159,7 +159,7 @@
                 ]
             }
         },
-        "/api/comptes": {
+        "/api/v1/comptes": {
             "get": {
                 "tags": [
                     "Comptes"
@@ -354,7 +354,7 @@
                 ]
             }
         },
-        "/api/comptes/{compte}": {
+        "/api/v1/comptes/{compte}": {
             "get": {
                 "tags": [
                     "Comptes"

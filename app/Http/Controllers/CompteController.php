@@ -31,7 +31,7 @@ class CompteController extends Controller
     }
     /**
      * @OA\Get(
-     *     path="/api/comptes",
+     *     path="/api/v1/comptes",
      *     summary="Liste tous les comptes",
      *     description="Admin peut récupérer la liste de tous les comptes. Client peut récupérer la liste de ses comptes.",
      *     operationId="listComptes",
@@ -94,7 +94,7 @@ class CompteController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/comptes",
+     *     path="/api/v1/comptes",
      *     summary="Créer un nouveau compte",
      *     description="Créer un nouveau compte bancaire pour un client existant ou nouveau",
      *     operationId="createCompte",
@@ -243,7 +243,7 @@ class CompteController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/comptes/{compte}",
+     *     path="/api/v1/comptes/{compte}",
      *     summary="Récupérer un compte spécifique",
      *     description="Récupérer les détails d'un compte spécifique par son ID",
      *     operationId="getCompte",

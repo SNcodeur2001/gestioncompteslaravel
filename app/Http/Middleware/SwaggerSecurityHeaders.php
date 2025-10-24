@@ -24,7 +24,7 @@ class SwaggerSecurityHeaders
                "style-src 'self' 'unsafe-inline' http: https: fonts.googleapis.com cdn.jsdelivr.net unpkg.com; " .
                "img-src 'self' http: https: data: cdn.jsdelivr.net unpkg.com; " .
                "font-src 'self' http: https: fonts.gstatic.com cdn.jsdelivr.net unpkg.com data:; " .
-               "connect-src 'self' http: https:; " .
+               "connect-src 'self' http: https: ws: wss:; " .
                "frame-ancestors 'none';";
 
         $response->headers->set('Content-Security-Policy', $csp);
