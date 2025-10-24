@@ -11,8 +11,9 @@ return [
             'routes' => [
                 'api' => 'api/documentation',
             ],
+            'swagger_ui_assets_path' => 'https://gestioncompteslaravel.onrender.com/docs/asset/',
             'paths' => [
-                'use_absolute_path' => env('L5_SWAGGER_USE_ABSOLUTE_PATH', true),
+                'use_absolute_path' => true,
                 'docs_json' => 'api-docs.json',
                 'docs_yaml' => 'api-docs.yaml',
                 'format_to_use_for_docs' => env('L5_FORMAT_TO_USE_FOR_DOCS', 'json'),
@@ -20,7 +21,7 @@ return [
                     base_path('app'),
                 ],
                 'excludes' => [],
-                'base' => env('L5_SWAGGER_BASE_PATH', env('APP_URL')),
+                'base' => 'https://gestioncompteslaravel.onrender.com',
             ],
         ],
     ],
@@ -29,8 +30,8 @@ return [
             'docs' => 'docs',
             'oauth2_callback' => 'api/oauth2-callback',
             'middleware' => [
-                'api' => [],
-                'web' => [],
+                'api' => ['swagger.security'],
+                'web' => ['swagger.security'],
             ],
             'group_options' => [],
         ],

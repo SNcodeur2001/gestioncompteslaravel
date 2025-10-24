@@ -30,10 +30,34 @@ class CompteController extends Controller
         $this->compteService = $compteService;
     }
     /**
-     * Lister tous les comptes
-     * Admin peut récupérer la liste de tous les comptes
-     * Client peut récupérer la liste de ses comptes
-     * Liste compte non supprimés type cheque ou compte Epargne Actif
+     * @OA\Get(
+     *     path="/api/comptes",
+     *     summary="Liste tous les comptes",
+     *     description="Admin peut récupérer la liste de tous les comptes. Client peut récupérer la liste de ses comptes.",
+     *     operationId="listComptes",
+     *     tags={"Comptes"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="X-Role",
+     *         in="header",
+     *         description="Rôle de l'utilisateur (admin/client)",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Liste des comptes récupérée avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Liste des comptes récupérée avec succès"),
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Compte"))
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Non autorisé"
+     *     )
+     * )
      */
     public function index(Request $request): JsonResponse
     {
@@ -62,8 +86,46 @@ class CompteController extends Controller
     }
 
     /**
-     * Créer un nouveau compte
-     * Créer un nouveau compte bancaire pour un client existant ou nouveau
+     * @OA\Post(
+     *     path="/api/comptes",
+     *     summary="Créer un nouveau compte",
+     *     description="Créer un nouveau compte bancaire pour un client existant ou nouveau",
+     *     operationId="createCompte",
+     *     tags={"Comptes"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="type", type="string", enum={"epargne", "cheque", "courant"}),
+     *             @OA\Property(property="soldeInitial", type="number"),
+     *             @OA\Property(property="solde", type="number"),
+     *             @OA\Property(property="devise", type="string", example="XOF"),
+     *             @OA\Property(
+     *                 property="client",
+     *                 type="object",
+     *                 @OA\Property(property="id", type="integer", nullable=true),
+     *                 @OA\Property(property="titulaire", type="string"),
+     *                 @OA\Property(property="nci", type="string"),
+     *                 @OA\Property(property="email", type="string"),
+     *                 @OA\Property(property="telephone", type="string"),
+     *                 @OA\Property(property="adresse", type="string")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Compte créé avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Compte créé avec succès"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Compte")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Erreur de validation"
+     *     )
+     * )
      */
     public function store(StoreCompteRequest $request): JsonResponse
     {

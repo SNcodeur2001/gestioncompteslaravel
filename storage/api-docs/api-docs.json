@@ -1,769 +1,293 @@
-openapi: 3.0.0
-info:
-  title: API Bancaire - Gestion des Comptes
-  description: API pour la gestion des comptes bancaires, clients et transactions
-  version: 1.0.0
-servers:
-  - url: https://gestioncompteslaravel.onrender.com/api/v1
-    description: Serveur de production
-paths:
-  /comptes/archives:
-    get:
-      tags:
-        - Comptes Archivés
-      summary: Lister tous les comptes archivés
-      description: La consultation de compte Epargne archiver se fait a partir du cloud
-      operationId: 3f27611adb4099ce5717c8dfe8c54dab
-      parameters:
-        - name: page
-          in: query
-          description: Numéro de page
-          required: false
-          schema:
-            type: integer
-            default: 1
-        - name: limit
-          in: query
-          description: Nombre d'éléments par page
-          required: false
-          schema:
-            type: integer
-            default: 10
-            maximum: 100
-        - name: type
-          in: query
-          description: Type de compte (epargne, cheque, courant)
-          required: false
-          schema:
-            type: string
-            enum:
-              - epargne
-              - cheque
-              - courant
-        - name: statut
-          in: query
-          description: Statut du compte (actif, bloque, ferme)
-          required: false
-          schema:
-            type: string
-            enum:
-              - actif
-              - bloque
-              - ferme
-        - name: search
-          in: query
-          description: Recherche par numéro de compte ou titulaire
-          required: false
-          schema:
-            type: string
-        - name: sort
-          in: query
-          description: Champ de tri
-          required: false
-          schema:
-            type: string
-            enum:
-              - dateCreation
-              - solde
-              - titulaire
-        - name: order
-          in: query
-          description: Ordre de tri
-          required: false
-          schema:
-            type: string
-            default: desc
-            enum:
-              - asc
-              - desc
-      responses:
-        '200':
-          description: Liste des comptes archivés récupérée avec succès
-          content:
-            application/json:
-              schema:
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: Liste des comptes archivés récupérée avec succès
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Compte'
-                  pagination:
-                    properties:
-                      currentPage:
-                        type: integer
-                        example: 1
-                      totalPages:
-                        type: integer
-                        example: 3
-                      totalItems:
-                        type: integer
-                        example: 25
-                      itemsPerPage:
-                        type: integer
-                        example: 10
-                      hasNext:
-                        type: boolean
-                        example: true
-                      hasPrevious:
-                        type: boolean
-                        example: false
-                    type: object
-                  links:
-                    properties:
-                      self:
-                        type: string
-                        example: http://localhost:8001/api/v1/comptes/archives?page=1
-                      next:
-                        type: string
-                        example: http://localhost:8001/api/v1/comptes/archives?page=2
-                      first:
-                        type: string
-                        example: http://localhost:8001/api/v1/comptes/archives?page=1
-                      last:
-                        type: string
-                        example: http://localhost:8001/api/v1/comptes/archives?page=3
-                    type: object
-                type: object
-        '401':
-          description: Non autorisé
-          content:
-            application/json:
-              schema:
-                properties:
-                  success:
-                    type: boolean
-                    example: false
-                  message:
-                    type: string
-                    example: Non autorisé
-                type: object
-      security:
-        - bearerAuth: []
-  /comptes:
-    get:
-      tags:
-        - Comptes
-      summary: Lister tous les comptes
-      description: Admin peut récupérer la liste de tous les comptes. Client peut récupérer la liste de ses comptes. Liste compte non supprimés type cheque ou compte Epargne Actif
-      operationId: 5fdb1d9d6a1e1d81e65a694d33a249c6
-      parameters:
-        - name: page
-          in: query
-          description: Numéro de page
-          required: false
-          schema:
-            type: integer
-            default: 1
-        - name: limit
-          in: query
-          description: Nombre d'éléments par page
-          required: false
-          schema:
-            type: integer
-            default: 10
-            maximum: 100
-        - name: type
-          in: query
-          description: Type de compte (epargne, cheque, courant)
-          required: false
-          schema:
-            type: string
-            enum:
-              - epargne
-              - cheque
-              - courant
-        - name: statut
-          in: query
-          description: Statut du compte (actif, bloque, ferme)
-          required: false
-          schema:
-            type: string
-            enum:
-              - actif
-              - bloque
-              - ferme
-        - name: search
-          in: query
-          description: Recherche par numéro de compte ou titulaire
-          required: false
-          schema:
-            type: string
-        - name: sort
-          in: query
-          description: Champ de tri
-          required: false
-          schema:
-            type: string
-            enum:
-              - dateCreation
-              - solde
-              - titulaire
-        - name: order
-          in: query
-          description: Ordre de tri
-          required: false
-          schema:
-            type: string
-            default: desc
-            enum:
-              - asc
-              - desc
-      responses:
-        '200':
-          description: Liste des comptes récupérée avec succès
-          content:
-            application/json:
-              schema:
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: Liste des comptes récupérée avec succès
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Compte'
-                    example: []
-                  pagination:
-                    properties:
-                      currentPage:
-                        type: integer
-                        example: 1
-                      totalPages:
-                        type: integer
-                        example: 1
-                      totalItems:
-                        type: integer
-                        example: 0
-                      itemsPerPage:
-                        type: integer
-                        example: 10
-                      hasNext:
-                        type: boolean
-                        example: false
-                      hasPrevious:
-                        type: boolean
-                        example: false
-                    type: object
-                  links:
-                    properties:
-                      self:
-                        type: string
-                        example: http://localhost:8001/api/v1/comptes?page=1
-                      next:
-                        type: string
-                        example: null
-                      first:
-                        type: string
-                        example: http://localhost:8001/api/v1/comptes?page=1
-                      last:
-                        type: string
-                        example: http://localhost:8001/api/v1/comptes?page=1
-                    type: object
-                type: object
-        '401':
-          description: Non autorisé
-          content:
-            application/json:
-              schema:
-                properties:
-                  success:
-                    type: boolean
-                    example: false
-                  message:
-                    type: string
-                    example: Non autorisé
-                type: object
-      security:
-        - bearerAuth: []
-    post:
-      tags:
-        - Comptes
-      summary: Créer un nouveau compte
-      description: Créer un nouveau compte bancaire pour un client existant ou nouveau
-      operationId: a896aedada2e34a114a6b2bda0468e82
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              required:
-                - type
-                - soldeInitial
-                - solde
-                - devise
-              properties:
-                type:
-                  type: string
-                  enum:
-                    - epargne
-                    - cheque
-                    - courant
-                  example: epargne
-                soldeInitial:
-                  type: number
-                  format: float
-                  example: 1000
-                solde:
-                  type: number
-                  format: float
-                  example: 1000
-                devise:
-                  type: string
-                  example: XOF
-                client:
-                  type: object
-                  oneOf:
-                    - required:
-                        - id
-                      properties:
-                        id:
-                          type: string
-                          example: string
-                      type: object
-                    - required:
-                        - titulaire
-                        - nci
-                        - email
-                        - telephone
-                        - adresse
-                      properties:
-                        titulaire:
-                          type: string
-                          example: John Doe
-                        nci:
-                          type: string
-                          example: 1234567890123
-                        email:
-                          type: string
-                          format: email
-                          example: john.doe@example.com
-                        telephone:
-                          type: string
-                          example: 221771234567
-                        adresse:
-                          type: string
-                          example: Dakar, Sénégal
-                      type: object
-              type: object
-      responses:
-        '201':
-          description: Compte créé avec succès
-          content:
-            application/json:
-              schema:
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: COMPTE_CREATED
-                  data:
-                    $ref: '#/components/schemas/Compte'
-                type: object
-        '400':
-          description: Données invalides
-          content:
-            application/json:
-              schema:
-                properties:
-                  success:
-                    type: boolean
-                    example: false
-                  message:
-                    type: string
-                    example: CREATION_ERROR
-                type: object
-        '401':
-          description: Non autorisé
-          content:
-            application/json:
-              schema:
-                properties:
-                  success:
-                    type: boolean
-                    example: false
-                  message:
-                    type: string
-                    example: Non autorisé
-                type: object
-      security:
-        - bearerAuth: []
-  /comptes/{compteId}:
-    get:
-      tags:
-        - Comptes
-      summary: Afficher un compte spécifique
-      description: Récupérer les détails d'un compte spécifique
-      operationId: 53eb952653f2afcba77ec73e86d8ee69
-      parameters:
-        - name: compteId
-          in: path
-          description: ID du compte
-          required: true
-          schema:
-            type: string
-            example: 458d13a0-2a2d-4982-a426-1a5b297cdfbc
-      responses:
-        '200':
-          description: Détails du compte récupérés avec succès
-          content:
-            application/json:
-              schema:
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: Compte récupéré avec succès
-                  data:
-                    $ref: '#/components/schemas/Compte'
-                type: object
-        '404':
-          description: Compte non trouvé
-          content:
-            application/json:
-              schema:
-                properties:
-                  success:
-                    type: boolean
-                    example: false
-                  message:
-                    type: string
-                    example: Compte non trouvé
-                type: object
-        '401':
-          description: Non autorisé
-          content:
-            application/json:
-              schema:
-                properties:
-                  success:
-                    type: boolean
-                    example: false
-                  message:
-                    type: string
-                    example: Non autorisé
-                type: object
-      security:
-        - bearerAuth: []
-  /clients/{client}/comptes:
-    get:
-      tags:
-        - Comptes
-      summary: Lister les comptes d'un client spécifique
-      description: Récupérer la liste des comptes d'un client spécifique
-      operationId: 16727d4615d4ec6317157535e03f7b89
-      parameters:
-        - name: client
-          in: path
-          description: ID du client
-          required: true
-          schema:
-            type: string
-            example: e95d1e5d-938b-48e1-8619-f66bd722bef6
-        - name: page
-          in: query
-          description: Numéro de page
-          required: false
-          schema:
-            type: integer
-            default: 1
-        - name: limit
-          in: query
-          description: Nombre d'éléments par page
-          required: false
-          schema:
-            type: integer
-            default: 10
-            maximum: 100
-      responses:
-        '200':
-          description: Comptes du client récupérés avec succès
-          content:
-            application/json:
-              schema:
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: Comptes du client récupérés avec succès
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Compte'
-                  pagination:
-                    properties:
-                      currentPage:
-                        type: integer
-                        example: 1
-                      totalPages:
-                        type: integer
-                        example: 2
-                      totalItems:
-                        type: integer
-                        example: 15
-                      itemsPerPage:
-                        type: integer
-                        example: 10
-                      hasNext:
-                        type: boolean
-                        example: true
-                      hasPrevious:
-                        type: boolean
-                        example: false
-                    type: object
-                  links:
-                    properties:
-                      self:
-                        type: string
-                        example: http://localhost:8001/api/v1/clients/1/comptes?page=1
-                      next:
-                        type: string
-                        example: http://localhost:8001/api/v1/clients/1/comptes?page=2
-                      first:
-                        type: string
-                        example: http://localhost:8001/api/v1/clients/1/comptes?page=1
-                      last:
-                        type: string
-                        example: http://localhost:8001/api/v1/clients/1/comptes?page=2
-                    type: object
-                type: object
-        '404':
-          description: Client non trouvé
-          content:
-            application/json:
-              schema:
-                properties:
-                  success:
-                    type: boolean
-                    example: false
-                  message:
-                    type: string
-                    example: Client non trouvé
-                type: object
-        '500':
-          description: Erreur interne du serveur
-          content:
-            application/json:
-              schema:
-                properties:
-                  success:
-                    type: boolean
-                    example: false
-                  message:
-                    type: string
-                    example: Erreur interne du serveur
-                type: object
-        '401':
-          description: Non autorisé
-          content:
-            application/json:
-              schema:
-                properties:
-                  success:
-                    type: boolean
-                    example: false
-                  message:
-                    type: string
-                    example: Non autorisé
-                type: object
-      security:
-        - bearerAuth: []
-  /clients/{client}/comptes/{compte}:
-    get:
-      tags:
-        - Comptes
-      summary: Afficher un compte spécifique d'un client
-      description: Récupérer les détails d'un compte spécifique appartenant à un client
-      operationId: 71c73f3de54c2ec10133f2a05f17410d
-      parameters:
-        - name: client
-          in: path
-          description: ID du client
-          required: true
-          schema:
-            type: string
-            example: e95d1e5d-938b-48e1-8619-f66bd722bef6
-        - name: compte
-          in: path
-          description: ID du compte
-          required: true
-          schema:
-            type: string
-            example: 458d13a0-2a2d-4982-a426-1a5b297cdfbc
-      responses:
-        '200':
-          description: Détails du compte récupérés avec succès
-          content:
-            application/json:
-              schema:
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: Compte récupéré avec succès
-                  data:
-                    $ref: '#/components/schemas/Compte'
-                type: object
-        '404':
-          description: Compte ou client non trouvé
-          content:
-            application/json:
-              schema:
-                properties:
-                  success:
-                    type: boolean
-                    example: false
-                  message:
-                    type: string
-                    example: Compte non trouvé
-                type: object
-        '500':
-          description: Erreur interne du serveur
-          content:
-            application/json:
-              schema:
-                properties:
-                  success:
-                    type: boolean
-                    example: false
-                  message:
-                    type: string
-                    example: Erreur interne du serveur
-                type: object
-        '401':
-          description: Non autorisé
-          content:
-            application/json:
-              schema:
-                properties:
-                  success:
-                    type: boolean
-                    example: false
-                  message:
-                    type: string
-                    example: Non autorisé
-                type: object
-      security:
-        - bearerAuth: []
-components:
-  schemas:
-    Compte:
-      title: Compte
-      description: Modèle représentant un compte bancaire
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: 458d13a0-2a2d-4982-a426-1a5b297cdfbc
-        client_id:
-          type: string
-          format: uuid
-          example: 02e979b7-df6e-4278-800a-580557e9d20c
-        numero:
-          type: string
-          example: COMP-318580
-        type:
-          type: string
-          enum:
-            - epargne
-            - cheque
-            - courant
-          example: epargne
-        soldeInitial:
-          type: number
-          format: float
-          example: 448334
-        solde:
-          type: number
-          format: float
-          example: 499410
-        devise:
-          type: string
-          example: FCFA
-        created_at:
-          type: string
-          format: date-time
-          example: 2025-10-23T14:46:42.000000Z
-        updated_at:
-          type: string
-          format: date-time
-          example: 2025-10-23T14:46:42.000000Z
-        statut:
-          type: string
-          enum:
-            - actif
-            - bloque
-            - ferme
-          example: actif
-        motifBlocage:
-          type: string
-          example: null
-          nullable: true
-        deleted_at:
-          type: string
-          format: date-time
-          example: null
-          nullable: true
-        archived:
-          type: boolean
-          example: false
-        client:
-          $ref: '#/components/schemas/Client'
-      type: object
-    Client:
-      title: Client
-      description: Modèle représentant un client bancaire
-      properties:
-        id:
-          type: string
-          format: uuid
-          example: 02e979b7-df6e-4278-800a-580557e9d20c
-        titulaire:
-          type: string
-          example: Kip Lowe
-        nci:
-          type: string
-          example: 2635726367683
-        email:
-          type: string
-          format: email
-          example: greg.casper@example.com
-        telephone:
-          type: string
-          example: 74210088
-        adresse:
-          type: string
-          example: 5198 Reichel Throughway\nPort Electa, PA 89423
-        dateCreation:
-          type: string
-          format: date-time
-          example: 2025-10-23T14:46:42.000000Z
-      type: object
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-tags:
-  - name: Comptes Archivés
-    description: Gestion des comptes archivés
-  - name: Comptes
-    description: Comptes
-security:
-  - bearerAuth: []
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "API Bancaire - Gestion des Comptes",
+        "description": "Documentation de l'API de Gestion des Comptes",
+        "contact": {
+            "email": "contact@gestioncomptes.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://gestioncompteslaravel.onrender.com",
+            "description": "API Server"
+        }
+    ],
+    "paths": {
+        "/api/comptes": {
+            "get": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Liste tous les comptes",
+                "description": "Admin peut récupérer la liste de tous les comptes. Client peut récupérer la liste de ses comptes.",
+                "operationId": "listComptes",
+                "parameters": [
+                    {
+                        "name": "X-Role",
+                        "in": "header",
+                        "description": "Rôle de l'utilisateur (admin/client)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des comptes récupérée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Liste des comptes récupérée avec succès"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Compte"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non autorisé"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Créer un nouveau compte",
+                "description": "Créer un nouveau compte bancaire pour un client existant ou nouveau",
+                "operationId": "createCompte",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "epargne",
+                                            "cheque",
+                                            "courant"
+                                        ]
+                                    },
+                                    "soldeInitial": {
+                                        "type": "number"
+                                    },
+                                    "solde": {
+                                        "type": "number"
+                                    },
+                                    "devise": {
+                                        "type": "string",
+                                        "example": "XOF"
+                                    },
+                                    "client": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "integer",
+                                                "nullable": true
+                                            },
+                                            "titulaire": {
+                                                "type": "string"
+                                            },
+                                            "nci": {
+                                                "type": "string"
+                                            },
+                                            "email": {
+                                                "type": "string"
+                                            },
+                                            "telephone": {
+                                                "type": "string"
+                                            },
+                                            "adresse": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Compte créé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Compte créé avec succès"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Compte"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Erreur de validation"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Client": {
+                "title": "Client",
+                "description": "Modèle de client",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "titulaire": {
+                        "type": "string",
+                        "example": "John Doe"
+                    },
+                    "nci": {
+                        "type": "string",
+                        "example": "1234567890123"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "john@example.com"
+                    },
+                    "telephone": {
+                        "type": "string",
+                        "example": "221776543210"
+                    },
+                    "adresse": {
+                        "type": "string",
+                        "example": "123 Rue Principale, Dakar"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Compte": {
+                "title": "Compte",
+                "description": "Modèle de compte bancaire",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "numero": {
+                        "type": "string",
+                        "example": "CPT123456789"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "epargne",
+                            "cheque",
+                            "courant"
+                        ]
+                    },
+                    "soldeInitial": {
+                        "type": "number",
+                        "format": "double",
+                        "example": 1000
+                    },
+                    "solde": {
+                        "type": "number",
+                        "format": "double",
+                        "example": 1000
+                    },
+                    "devise": {
+                        "type": "string",
+                        "example": "XOF"
+                    },
+                    "statut": {
+                        "type": "string",
+                        "enum": [
+                            "actif",
+                            "bloque",
+                            "ferme"
+                        ]
+                    },
+                    "client_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "client": {
+                        "$ref": "#/components/schemas/Client"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Comptes",
+            "description": "Comptes"
+        }
+    ],
+    "security": [
+        {
+            "bearerAuth": []
+        }
+    ]
+}
