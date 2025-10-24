@@ -20,7 +20,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-// Health check route
+// Health check route (sans middleware pour les tests)
 Route::get('/health', function() {
     return response()->json(['status' => 'ok']);
 });
@@ -51,4 +51,9 @@ Route::prefix('v1')->middleware(['fake.auth', 'rating'])->group(function () {
      * La consultation de compte Epargne archiver se fait a partir du cloud
      */
     Route::get('comptes/archives', [CompteArchiveController::class, 'index'])->name('comptes.archives');
+});
+
+// Health check route (sans middleware pour les tests)
+Route::get('/health', function() {
+    return response()->json(['status' => 'ok']);
 });

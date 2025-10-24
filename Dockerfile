@@ -1,61 +1,81 @@
-FROM php:8.2-fpm
+# Étape 1: Build des dépendances PHP
+FROM composer:2.6 AS composer-build
 
-# Installation des dépendances système
-RUN apt-get update && apt-get install -y \
-    nginx \
-    libpq-dev \
-    git \
-    zip \
-    unzip \
-    && docker-php-ext-install pdo pdo_pgsql \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
 
-# Configurer PHP
-COPY docker/php/php.ini /usr/local/etc/php/conf.d/app.ini
+# Copier les fichiers de dépendances
+COPY composer.json composer.lock ./
 
-# Configuration du répertoire de travail
+# Installer les dépendances PHP sans scripts post-install
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-scripts
+
+# Étape 2: Image finale pour l'application
+FROM php:8.3-fpm-alpine
+
+# Installer les extensions PHP nécessaires
+RUN apk add --no-cache postgresql-dev \
+    && docker-php-ext-install pdo pdo_pgsql
+
+# Créer un utilisateur non-root
+RUN addgroup -g 1000 laravel && adduser -G laravel -g laravel -s /bin/sh -D laravel
+
+# Définir le répertoire de travail
 WORKDIR /var/www/html
 
-# Installation de Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Copier les dépendances installées depuis l'étape de build
+COPY --from=composer-build /app/vendor ./vendor
 
-# Copier les fichiers de l'application avec les bonnes permissions
-COPY --chown=www-data:www-data . .
+# Copier le reste du code de l'application
+COPY . .
 
-# Vérifier la présence des fichiers essentiels
-RUN ls -la public/index.php || (echo "index.php not found" && exit 1)
+# Créer les répertoires nécessaires et définir les permissions
+RUN mkdir -p storage/framework/{cache,data,sessions,testing,views} \
+    && mkdir -p storage/logs \
+    && mkdir -p bootstrap/cache \
+    && chown -R laravel:laravel /var/www/html \
+    && chmod -R 775 storage bootstrap/cache
 
-# Installer les dépendances de Composer
-RUN composer install --no-dev --optimize-autoloader --no-scripts
+# Créer un fichier .env minimal pour le build
+RUN echo "APP_NAME=Laravel" > .env && \
+    echo "APP_ENV=production" >> .env && \
+    echo "APP_KEY=" >> .env && \
+    echo "APP_DEBUG=false" >> .env && \
+    echo "APP_URL=http://localhost" >> .env && \
+    echo "" >> .env && \
+    echo "LOG_CHANNEL=stack" >> .env && \
+    echo "LOG_LEVEL=error" >> .env && \
+    echo "" >> .env && \
+    echo "DB_CONNECTION=pgsql" >> .env && \
+    echo "DB_HOST=\${DB_HOST}" >> .env && \
+    echo "DB_PORT=\${DB_PORT}" >> .env && \
+    echo "DB_DATABASE=\${DB_DATABASE}" >> .env && \
+    echo "DB_USERNAME=\${DB_USERNAME}" >> .env && \
+    echo "DB_PASSWORD=\${DB_PASSWORD}" >> .env && \
+    echo "" >> .env && \
+    echo "CACHE_DRIVER=file" >> .env && \
+    echo "SESSION_DRIVER=file" >> .env && \
+    echo "QUEUE_CONNECTION=sync" >> .env
 
-# Configurer Nginx
-COPY docker/nginx/conf.d/app.conf /etc/nginx/conf.d/default.conf
-RUN rm /etc/nginx/sites-enabled/default 2>/dev/null || true
+# Changer les permissions du fichier .env pour l'utilisateur laravel
+RUN chown laravel:laravel .env
 
-# Définir les permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 . \
-    && chmod -R 775 storage bootstrap/cache \
-    && find . -type f -exec chmod 644 {} \; \
-    && find . -type d -exec chmod 755 {} \; \
-    && chmod 775 docker/start.sh
+# Générer la clé d'application et optimiser
+USER laravel
+RUN php artisan key:generate --force && \
+    php artisan config:cache && \
+    php artisan route:cache && \
+    php artisan view:cache
+USER root
 
-# Copier le script de démarrage
-COPY docker/start.sh /usr/local/bin/start.sh
-RUN chmod +x /usr/local/bin/start.sh
+# Copier le script d'entrée
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-EXPOSE 80
+# Passer à l'utilisateur non-root
+USER laravel
 
-# Définir les variables d'environnement par défaut
-ENV APP_ENV=production \
-    APP_DEBUG=false \
-    LOG_CHANNEL=stack \
-    LOG_LEVEL=error \
-    DB_CONNECTION=pgsql \
-    CACHE_DRIVER=file \
-    SESSION_DRIVER=file \
-    QUEUE_CONNECTION=sync
+# Exposer le port 8000
+EXPOSE 8000
 
-# Utiliser le script de démarrage
-CMD ["/usr/local/bin/start.sh"]
+# Commande par défaut
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]

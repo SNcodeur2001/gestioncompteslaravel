@@ -7,9 +7,9 @@
     <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <title>{{config('l5-swagger.documentations.'.$documentation.'.api.title')}}</title>
-    <link rel="stylesheet" type="text/css" href="{{ str_replace('http://', 'https://', l5_swagger_asset($documentation, 'swagger-ui.css')) }}">
-    <link rel="icon" type="image/png" href="{{ str_replace('http://', 'https://', l5_swagger_asset($documentation, 'favicon-32x32.png')) }}" sizes="32x32"/>
-    <link rel="icon" type="image/png" href="{{ str_replace('http://', 'https://', l5_swagger_asset($documentation, 'favicon-16x16.png')) }}" sizes="16x16"/>
+    <link rel="stylesheet" type="text/css" href="{{ config('app.env') === 'production' ? str_replace('http://', 'https://', l5_swagger_asset($documentation, 'swagger-ui.css')) : l5_swagger_asset($documentation, 'swagger-ui.css') }}">
+    <link rel="icon" type="image/png" href="{{ config('app.env') === 'production' ? str_replace('http://', 'https://', l5_swagger_asset($documentation, 'favicon-32x32.png')) : l5_swagger_asset($documentation, 'favicon-32x32.png') }}" sizes="32x32"/>
+    <link rel="icon" type="image/png" href="{{ config('app.env') === 'production' ? str_replace('http://', 'https://', l5_swagger_asset($documentation, 'favicon-16x16.png')) : l5_swagger_asset($documentation, 'favicon-16x16.png') }}" sizes="16x16"/>
     <style>
     html
     {
@@ -123,8 +123,8 @@
 <body @if(config('l5-swagger.defaults.ui.display.dark_mode')) id="dark-mode" @endif>
 <div id="swagger-ui"></div>
 
-<script src="{{ str_replace('http://', 'https://', l5_swagger_asset($documentation, 'swagger-ui-bundle.js')) }}"></script>
-<script src="{{ str_replace('http://', 'https://', l5_swagger_asset($documentation, 'swagger-ui-standalone-preset.js')) }}"></script>
+<script src="{{ config('app.env') === 'production' ? str_replace('http://', 'https://', l5_swagger_asset($documentation, 'swagger-ui-bundle.js')) : l5_swagger_asset($documentation, 'swagger-ui-bundle.js') }}"></script>
+<script src="{{ config('app.env') === 'production' ? str_replace('http://', 'https://', l5_swagger_asset($documentation, 'swagger-ui-standalone-preset.js')) : l5_swagger_asset($documentation, 'swagger-ui-standalone-preset.js') }}"></script>
 <script>
     window.onload = function() {
         // Build a system

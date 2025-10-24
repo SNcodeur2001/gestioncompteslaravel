@@ -15,7 +15,7 @@ class ClientFactory extends Factory
             'titulaire' => $this->faker->name(),
             'nci' => $this->faker->unique()->numerify('#############'), // 13 chiffres
             'email' => $this->faker->unique()->safeEmail(),
-            'telephone' => '7' . $this->faker->numerify('#######'), // numéro Sénégalais
+            'telephone' => '2217' . $this->faker->numerify('#######'), // numéro Sénégalais complet
             'adresse' => $this->faker->address(),
         ];
     }

@@ -2,32 +2,27 @@ version: '3.8'
 
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: gestioncomptes-app
-    restart: unless-stopped
+    build: .
     ports:
-      - "8080:80"
+      - "8000:8000"
+    env_file:
+      - .env
     environment:
       - APP_ENV=production
       - APP_DEBUG=false
-      - APP_URL=${APP_URL:-http://localhost:8080}
-      - APP_KEY=${APP_KEY}
-      - DB_CONNECTION=${DB_CONNECTION}
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
-      - DB_DATABASE=${DB_DATABASE}
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - L5_SWAGGER_GENERATE_ALWAYS=true
-      - SWAGGER_VERSION=3.0
-      - L5_SWAGGER_CONST_HOST=${APP_URL:-http://localhost:8080}/api/v1
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: laravel
+      POSTGRES_USER: laravel
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
     volumes:
-      - ./storage/logs:/var/www/storage/logs
-      - ./storage/app/public:/var/www/storage/app/public
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/api/v1/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

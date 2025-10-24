@@ -42,7 +42,14 @@ class CompteController extends Controller
      *         in="header",
      *         description="Rôle de l'utilisateur (admin/client)",
      *         required=true,
-     *         @OA\Schema(type="string")
+     *         @OA\Schema(type="string", enum={"admin", "client"}, example="admin")
+     *     ),
+     *     @OA\Parameter(
+     *         name="X-Telephone",
+     *         in="header",
+     *         description="Numéro de téléphone du client (requis pour le rôle client)",
+     *         required=false,
+     *         @OA\Schema(type="string", pattern="^221[76|77|78|33|70][0-9]{7}$", example="221776543210")
      *     ),
      *     @OA\Response(
      *         response=200,
@@ -96,19 +103,20 @@ class CompteController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             @OA\Property(property="type", type="string", enum={"epargne", "cheque", "courant"}),
-     *             @OA\Property(property="soldeInitial", type="number"),
-     *             @OA\Property(property="solde", type="number"),
-     *             @OA\Property(property="devise", type="string", example="XOF"),
+     *             @OA\Property(property="type", type="string", enum={"epargne", "cheque", "courant"}, example="cheque"),
+     *             @OA\Property(property="soldeInitial", type="number", minimum=10000, example=50000),
+     *             @OA\Property(property="solde", type="number", minimum=0, example=50000),
+     *             @OA\Property(property="devise", type="string", enum={"XOF", "FCFA", "USD", "EUR"}, example="XOF"),
      *             @OA\Property(
      *                 property="client",
      *                 type="object",
-     *                 @OA\Property(property="id", type="integer", nullable=true),
-     *                 @OA\Property(property="titulaire", type="string"),
-     *                 @OA\Property(property="nci", type="string"),
-     *                 @OA\Property(property="email", type="string"),
-     *                 @OA\Property(property="telephone", type="string"),
-     *                 @OA\Property(property="adresse", type="string")
+     *                 description="Informations du client (obligatoire si nouveau client)",
+     *                 @OA\Property(property="id", type="string", format="uuid", nullable=true, description="ID du client existant (optionnel)"),
+     *                 @OA\Property(property="titulaire", type="string", minLength=2, maxLength=255, example="Mamadou Diop"),
+     *                 @OA\Property(property="nci", type="string", minLength=13, maxLength=13, example="1234567890123"),
+     *                 @OA\Property(property="email", type="string", format="email", example="mamadou.diop@email.com"),
+     *                 @OA\Property(property="telephone", type="string", pattern="^221[76|77|78|33|70][0-9]{7}$", example="221776543210"),
+     *                 @OA\Property(property="adresse", type="string", minLength=5, maxLength=500, example="123 Rue Kermel, Plateau, Dakar")
      *             )
      *         )
      *     ),
@@ -233,6 +241,36 @@ class CompteController extends Controller
         */
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/comptes/{compte}",
+     *     summary="Récupérer un compte spécifique",
+     *     description="Récupérer les détails d'un compte spécifique par son ID",
+     *     operationId="getCompte",
+     *     tags={"Comptes"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="compte",
+     *         in="path",
+     *         description="ID du compte",
+     *         required=true,
+     *         @OA\Schema(type="string", format="uuid")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Compte récupéré avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Compte récupéré avec succès"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Compte")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Compte non trouvé"
+     *     )
+     * )
+     */
     public function show(Compte $compte): JsonResponse
     {
         $compte = $this->compteService->findCompte($compte->id);
@@ -252,6 +290,53 @@ class CompteController extends Controller
         //
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/clients/{client}/comptes",
+     *     summary="Récupérer les comptes d'un client",
+     *     description="Récupérer tous les comptes associés à un client spécifique",
+     *     operationId="getClientComptes",
+     *     tags={"Comptes"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="client",
+     *         in="path",
+     *         description="ID du client",
+     *         required=true,
+     *         @OA\Schema(type="string", format="uuid")
+     *     ),
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Numéro de page",
+     *         @OA\Schema(type="integer", default=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="limit",
+     *         in="query",
+     *         description="Nombre d'éléments par page",
+     *         @OA\Schema(type="integer", default=10, maximum=100)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Comptes du client récupérés avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Comptes du client récupérés avec succès"),
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Compte")),
+     *             @OA\Property(property="pagination", type="object",
+     *                 @OA\Property(property="current_page", type="integer"),
+     *                 @OA\Property(property="per_page", type="integer"),
+     *                 @OA\Property(property="total", type="integer")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Client non trouvé"
+     *     )
+     * )
+     */
     public function clientComptes(Request $request, Client $client): JsonResponse
     {
         $comptes = $this->compteService->getComptesByClient($client, $request->all());
@@ -262,6 +347,43 @@ class CompteController extends Controller
         );
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/v1/clients/{client}/comptes/{compte}",
+     *     summary="Récupérer un compte spécifique d'un client",
+     *     description="Récupérer les détails d'un compte spécifique appartenant à un client",
+     *     operationId="getClientCompte",
+     *     tags={"Comptes"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="client",
+     *         in="path",
+     *         description="ID du client",
+     *         required=true,
+     *         @OA\Schema(type="string", format="uuid")
+     *     ),
+     *     @OA\Parameter(
+     *         name="compte",
+     *         in="path",
+     *         description="ID du compte",
+     *         required=true,
+     *         @OA\Schema(type="string", format="uuid")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Compte récupéré avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Compte récupéré avec succès"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Compte")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Client ou compte non trouvé"
+     *     )
+     * )
+     */
     public function clientCompte(Client $client, Compte $compte): JsonResponse
     {
         // Verify that the compte belongs to the client

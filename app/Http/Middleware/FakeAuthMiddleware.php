@@ -25,11 +25,11 @@ class FakeAuthMiddleware
                 'telephone' => null,
             ];
         } else {
-            // Client avec téléphone simulé
+            // Client avec téléphone simulé - utiliser un numéro valide du seeder
             $user = (object) [
                 'id' => 2,
                 'role' => 'client',
-                'telephone' => $request->header('X-Telephone', '771234567'), // Téléphone simulé pour les tests
+                'telephone' => $request->header('X-Telephone', '221771234567'), // Téléphone simulé valide pour les tests
             ];
         }
 

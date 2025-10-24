@@ -19,11 +19,12 @@ class CompteFactory extends Factory
     {
         return [
             'client_id' => Client::factory(),
-            'numero' => 'COMP-' . $this->faker->unique()->numerify('######'),
-            'type' => $this->faker->randomElement(['cheque', 'courant', 'epagne']),
-            'soldeInitial' => $this->faker->numberBetween(1000, 1000000),
+            'numero' => null, // Le mutator setNumeroAttribute va générer le numéro
+            'type' => $this->faker->randomElement(['cheque', 'courant', 'epargne']),
+            'soldeInitial' => $this->faker->numberBetween(10000, 1000000), // Minimum 10 000 FCFA
             'solde' => $this->faker->numberBetween(0, 500000),
-            'devise' => 'FCFA',
+            'devise' => $this->faker->randomElement(['XOF', 'FCFA', 'USD', 'EUR']),
+            'statut' => $this->faker->randomElement(['actif', 'bloque', 'ferme']),
         ];
     }
 }

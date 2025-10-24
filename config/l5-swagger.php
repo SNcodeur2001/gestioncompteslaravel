@@ -11,7 +11,9 @@ return [
             'routes' => [
                 'api' => 'api/documentation',
             ],
-            'swagger_ui_assets_path' => 'https://gestioncompteslaravel.onrender.com/docs/asset/',
+            'swagger_ui_assets_path' => config('app.env') === 'production'
+                ? env('APP_URL') . '/docs/asset/'
+                : '/docs/asset/',
             'paths' => [
                 'use_absolute_path' => true,
                 'docs_json' => 'api-docs.json',
@@ -21,7 +23,7 @@ return [
                     base_path('app'),
                 ],
                 'excludes' => [],
-                'base' => 'https://gestioncompteslaravel.onrender.com',
+                'base' => config('app.env') === 'production' ? env('APP_URL') : 'http://localhost:8000',
             ],
         ],
     ],
@@ -91,10 +93,10 @@ return [
             ],
         ],
         'constants' => [
-            'L5_SWAGGER_CONST_HOST' => env('L5_SWAGGER_CONST_HOST', 'https://gestioncompteslaravel.onrender.com'),
+            'L5_SWAGGER_CONST_HOST' => env('L5_SWAGGER_CONST_HOST', env('APP_URL')),
         ],
         
-        // Force HTTPS for assets
-        'asset_url' => env('ASSET_URL', 'https://gestioncompteslaravel.onrender.com'),
+        // Force HTTPS for assets only in production
+        'asset_url' => config('app.env') === 'production' ? env('ASSET_URL', env('APP_URL')) : null,
     ],
 ];

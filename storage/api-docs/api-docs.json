@@ -12,9 +12,153 @@
         {
             "url": "https://gestioncompteslaravel.onrender.com",
             "description": "API Server"
+        },
+        {
+            "url": "http://localhost:8000"
         }
     ],
     "paths": {
+        "/api/v1/comptes/archives": {
+            "get": {
+                "tags": [
+                    "Comptes Archivés"
+                ],
+                "summary": "Lister tous les comptes archivés",
+                "description": "Récupérer la liste de tous les comptes archivés. La consultation de compte Epargne archiver se fait à partir du cloud",
+                "operationId": "listComptesArchives",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Numéro de page",
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Nombre d'éléments par page",
+                        "schema": {
+                            "type": "integer",
+                            "default": 10,
+                            "maximum": 100
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "Filtrer par type de compte",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "epargne",
+                                "cheque",
+                                "courant"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "statut",
+                        "in": "query",
+                        "description": "Filtrer par statut",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "actif",
+                                "bloque",
+                                "ferme"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Rechercher par numéro de compte ou nom du titulaire",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Champ de tri",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "dateCreation",
+                                "solde",
+                                "titulaire"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "order",
+                        "in": "query",
+                        "description": "Ordre de tri",
+                        "schema": {
+                            "type": "string",
+                            "default": "desc",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Liste des comptes archivés récupérée avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Liste des comptes archivés récupérée avec succès"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Compte"
+                                            }
+                                        },
+                                        "pagination": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer"
+                                                },
+                                                "per_page": {
+                                                    "type": "integer"
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non autorisé"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/comptes": {
             "get": {
                 "tags": [
@@ -30,7 +174,23 @@
                         "description": "Rôle de l'utilisateur (admin/client)",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "type": "string",
+                            "enum": [
+                                "admin",
+                                "client"
+                            ],
+                            "example": "admin"
+                        }
+                    },
+                    {
+                        "name": "X-Telephone",
+                        "in": "header",
+                        "description": "Numéro de téléphone du client (requis pour le rôle client)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "^221[76|77|78|33|70][0-9]{7}$",
+                            "example": "221776543210"
                         }
                     }
                 ],
@@ -90,38 +250,65 @@
                                             "epargne",
                                             "cheque",
                                             "courant"
-                                        ]
+                                        ],
+                                        "example": "cheque"
                                     },
                                     "soldeInitial": {
-                                        "type": "number"
+                                        "type": "number",
+                                        "minimum": 10000,
+                                        "example": 50000
                                     },
                                     "solde": {
-                                        "type": "number"
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "example": 50000
                                     },
                                     "devise": {
                                         "type": "string",
+                                        "enum": [
+                                            "XOF",
+                                            "FCFA",
+                                            "USD",
+                                            "EUR"
+                                        ],
                                         "example": "XOF"
                                     },
                                     "client": {
+                                        "description": "Informations du client (obligatoire si nouveau client)",
                                         "properties": {
                                             "id": {
-                                                "type": "integer",
+                                                "description": "ID du client existant (optionnel)",
+                                                "type": "string",
+                                                "format": "uuid",
                                                 "nullable": true
                                             },
                                             "titulaire": {
-                                                "type": "string"
+                                                "type": "string",
+                                                "maxLength": 255,
+                                                "minLength": 2,
+                                                "example": "Mamadou Diop"
                                             },
                                             "nci": {
-                                                "type": "string"
+                                                "type": "string",
+                                                "maxLength": 13,
+                                                "minLength": 13,
+                                                "example": "1234567890123"
                                             },
                                             "email": {
-                                                "type": "string"
+                                                "type": "string",
+                                                "format": "email",
+                                                "example": "mamadou.diop@email.com"
                                             },
                                             "telephone": {
-                                                "type": "string"
+                                                "type": "string",
+                                                "pattern": "^221[76|77|78|33|70][0-9]{7}$",
+                                                "example": "221776543210"
                                             },
                                             "adresse": {
-                                                "type": "string"
+                                                "type": "string",
+                                                "maxLength": 500,
+                                                "minLength": 5,
+                                                "example": "123 Rue Kermel, Plateau, Dakar"
                                             }
                                         },
                                         "type": "object"
@@ -166,6 +353,217 @@
                     }
                 ]
             }
+        },
+        "/api/comptes/{compte}": {
+            "get": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Récupérer un compte spécifique",
+                "description": "Récupérer les détails d'un compte spécifique par son ID",
+                "operationId": "getCompte",
+                "parameters": [
+                    {
+                        "name": "compte",
+                        "in": "path",
+                        "description": "ID du compte",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Compte récupéré avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Compte récupéré avec succès"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Compte"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Compte non trouvé"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/clients/{client}/comptes": {
+            "get": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Récupérer les comptes d'un client",
+                "description": "Récupérer tous les comptes associés à un client spécifique",
+                "operationId": "getClientComptes",
+                "parameters": [
+                    {
+                        "name": "client",
+                        "in": "path",
+                        "description": "ID du client",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Numéro de page",
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Nombre d'éléments par page",
+                        "schema": {
+                            "type": "integer",
+                            "default": 10,
+                            "maximum": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Comptes du client récupérés avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Comptes du client récupérés avec succès"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Compte"
+                                            }
+                                        },
+                                        "pagination": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer"
+                                                },
+                                                "per_page": {
+                                                    "type": "integer"
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Client non trouvé"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/clients/{client}/comptes/{compte}": {
+            "get": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Récupérer un compte spécifique d'un client",
+                "description": "Récupérer les détails d'un compte spécifique appartenant à un client",
+                "operationId": "getClientCompte",
+                "parameters": [
+                    {
+                        "name": "client",
+                        "in": "path",
+                        "description": "ID du client",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "compte",
+                        "in": "path",
+                        "description": "ID du compte",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Compte récupéré avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Compte récupéré avec succès"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Compte"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Client ou compte non trouvé"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -175,12 +573,13 @@
                 "description": "Modèle de client",
                 "properties": {
                     "id": {
-                        "type": "integer",
-                        "example": 1
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "550e8400-e29b-41d4-a716-446655440000"
                     },
                     "titulaire": {
                         "type": "string",
-                        "example": "John Doe"
+                        "example": "Mamadou Diop"
                     },
                     "nci": {
                         "type": "string",
@@ -189,7 +588,7 @@
                     "email": {
                         "type": "string",
                         "format": "email",
-                        "example": "john@example.com"
+                        "example": "mamadou.diop@email.com"
                     },
                     "telephone": {
                         "type": "string",
@@ -197,7 +596,7 @@
                     },
                     "adresse": {
                         "type": "string",
-                        "example": "123 Rue Principale, Dakar"
+                        "example": "123 Rue Kermel, Plateau, Dakar"
                     },
                     "created_at": {
                         "type": "string",
@@ -215,12 +614,13 @@
                 "description": "Modèle de compte bancaire",
                 "properties": {
                     "id": {
-                        "type": "integer",
-                        "example": 1
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "550e8400-e29b-41d4-a716-446655440001"
                     },
                     "numero": {
                         "type": "string",
-                        "example": "CPT123456789"
+                        "example": "COMP-123456"
                     },
                     "type": {
                         "type": "string",
@@ -228,20 +628,27 @@
                             "epargne",
                             "cheque",
                             "courant"
-                        ]
+                        ],
+                        "example": "cheque"
                     },
                     "soldeInitial": {
                         "type": "number",
                         "format": "double",
-                        "example": 1000
+                        "example": 50000
                     },
                     "solde": {
                         "type": "number",
                         "format": "double",
-                        "example": 1000
+                        "example": 45000
                     },
                     "devise": {
                         "type": "string",
+                        "enum": [
+                            "XOF",
+                            "FCFA",
+                            "USD",
+                            "EUR"
+                        ],
                         "example": "XOF"
                     },
                     "statut": {
@@ -250,11 +657,22 @@
                             "actif",
                             "bloque",
                             "ferme"
-                        ]
+                        ],
+                        "example": "actif"
                     },
                     "client_id": {
-                        "type": "integer",
-                        "example": 1
+                        "type": "string",
+                        "format": "uuid",
+                        "example": "550e8400-e29b-41d4-a716-446655440000"
+                    },
+                    "archived": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "motifBlocage": {
+                        "type": "string",
+                        "example": null,
+                        "nullable": true
                     },
                     "created_at": {
                         "type": "string",
@@ -280,6 +698,10 @@
         }
     },
     "tags": [
+        {
+            "name": "Comptes Archivés",
+            "description": "Comptes Archivés"
+        },
         {
             "name": "Comptes",
             "description": "Comptes"
