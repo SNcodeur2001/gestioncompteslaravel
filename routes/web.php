@@ -16,9 +16,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     // Redirection vers la documentation API
     if (config('app.env') === 'production') {
-        return redirect('/api/documentation');
+        return redirect('/docs');
     }
-    
+
     // Page d'accueil en local
     return view('welcome');
 });
