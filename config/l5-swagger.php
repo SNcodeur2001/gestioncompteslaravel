@@ -23,7 +23,7 @@ return [
                     base_path('app'),
                 ],
                 'excludes' => [],
-                'base' => config('app.env') === 'production' ? env('APP_URL') : 'http://localhost:8000',
+                'base' => env('APP_URL'),
             ],
         ],
     ],
