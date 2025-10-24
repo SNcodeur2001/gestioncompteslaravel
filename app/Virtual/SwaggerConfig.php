@@ -14,12 +14,16 @@ namespace App\Virtual;
  * @OA\Server(
  *     description="API Server",
  *     url="https://gestioncompteslaravel.onrender.com"
- * )
+ )
+ * @OA\Server(
+ *     description="Local Development",
+ *     url="http://localhost:8000"
+ )
  * @OA\SecurityScheme(
  *     securityScheme="bearerAuth",
  *     type="http",
  *     scheme="bearer",
  *     bearerFormat="JWT"
- * )
+ )
  */
 class SwaggerConfig {}

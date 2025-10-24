@@ -14,6 +14,10 @@
             "description": "API Server"
         },
         {
+            "url": "http://localhost:8000",
+            "description": "Local Development"
+        },
+        {
             "url": "http://localhost:8000"
         }
     ],

@@ -128,7 +128,7 @@
         // Build a system
         const ui = SwaggerUIBundle({
             dom_id: '#swagger-ui',
-            url: "{!! $urlToDocs !!}",
+            url: "{!! config('app.env') === 'production' ? str_replace('http://', 'https://', $urlToDocs) : $urlToDocs !!}",
             operationsSorter: {!! isset($operationsSorter) ? '"' . $operationsSorter . '"' : 'null' !!},
             configUrl: {!! isset($configUrl) ? '"' . $configUrl . '"' : 'null' !!},
             validatorUrl: {!! isset($validatorUrl) ? '"' . $validatorUrl . '"' : 'null' !!},
