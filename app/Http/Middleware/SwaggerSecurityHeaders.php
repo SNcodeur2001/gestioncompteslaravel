@@ -18,14 +18,14 @@ class SwaggerSecurityHeaders
     {
         $response = $next($request);
 
-        // CSP plus permissive pour Swagger UI en développement
+        // CSP plus permissive pour Swagger UI en développement et production
         $csp = "default-src 'self' http: https:; " .
-               "script-src 'self' 'unsafe-inline' 'unsafe-eval' http: https: cdn.jsdelivr.net unpkg.com; " .
-               "style-src 'self' 'unsafe-inline' http: https: fonts.googleapis.com cdn.jsdelivr.net unpkg.com; " .
-               "img-src 'self' http: https: data: cdn.jsdelivr.net unpkg.com; " .
-               "font-src 'self' http: https: fonts.gstatic.com cdn.jsdelivr.net unpkg.com data:; " .
-               "connect-src 'self' http: https: ws: wss:; " .
-               "frame-ancestors 'none';";
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' http: https: cdn.jsdelivr.net unpkg.com; " .
+                "style-src 'self' 'unsafe-inline' http: https: fonts.googleapis.com cdn.jsdelivr.net unpkg.com; " .
+                "img-src 'self' http: https: data: cdn.jsdelivr.net unpkg.com; " .
+                "font-src 'self' http: https: fonts.gstatic.com cdn.jsdelivr.net unpkg.com data:; " .
+                "connect-src 'self' http: https: ws: wss: https://gestioncompteslaravel.onrender.com; " .
+                "frame-ancestors 'none';";
 
         $response->headers->set('Content-Security-Policy', $csp);
         $response->headers->set('X-Content-Type-Options', 'nosniff');
