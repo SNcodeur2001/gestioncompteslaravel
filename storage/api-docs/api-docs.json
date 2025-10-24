@@ -4,8 +4,8 @@ info:
   description: API pour la gestion des comptes bancaires, clients et transactions
   version: 1.0.0
 servers:
-  - url: http://localhost:8001/api/v1
-    description: Serveur de développement
+  - url: https://gestioncompteslaravel.onrender.com/api/v1
+    description: Serveur de production
 paths:
   /comptes/archives:
     get:
