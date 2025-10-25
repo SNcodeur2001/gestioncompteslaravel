@@ -19,7 +19,13 @@ return new class extends Migration
             $table->decimal('soldeInitial', 15, 2);
             $table->decimal('solde', 15, 2);
             $table->string('devise', 10)->default('FCFA');
+            $table->enum('statut', ['actif', 'bloque', 'ferme'])->default('actif');
+            $table->text('motifBlocage')->nullable();
+            $table->boolean('archived')->default(false);
+            $table->timestamp('dateDebutBlocage')->nullable();
+            $table->timestamp('dateFinBlocage')->nullable();
             $table->timestamps();
+            $table->softDeletes();
             $table->foreign('client_id')->references('id')->on('clients')->onDelete('cascade');
             $table->index('numero');
         });

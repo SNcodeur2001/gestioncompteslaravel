@@ -163,7 +163,7 @@
                 ]
             }
         },
-        "/api/v1/comptes": {
+        "/api/v1/ndiaye.mapathe/comptes": {
             "get": {
                 "tags": [
                     "Comptes"
@@ -358,7 +358,7 @@
                 ]
             }
         },
-        "/api/v1/comptes/{compteId}": {
+        "/api/v1/ndiaye.mapathe/comptes/{compteId}": {
             "get": {
                 "tags": [
                     "Comptes"
@@ -470,7 +470,7 @@
                 ]
             }
         },
-        "/api/v1/clients/{client}/comptes": {
+        "/api/v1/ndiaye.mapathe/clients/{client}/comptes": {
             "get": {
                 "tags": [
                     "Comptes"
@@ -561,7 +561,7 @@
                 ]
             }
         },
-        "/api/v1/clients/{client}/comptes/{compte}": {
+        "/api/v1/ndiaye.mapathe/clients/{client}/comptes/{compte}": {
             "get": {
                 "tags": [
                     "Comptes"

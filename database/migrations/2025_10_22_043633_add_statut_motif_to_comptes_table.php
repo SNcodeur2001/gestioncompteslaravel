@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('comptes', function (Blueprint $table) {
-            $table->enum('statut', ['actif', 'bloque', 'ferme'])->default('actif');
-            $table->text('motifBlocage')->nullable();
-        });
+        // Columns already added in create_comptes_table migration
+        // This migration is redundant and should be removed
     }
 
     /**
@@ -22,8 +20,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('comptes', function (Blueprint $table) {
-            $table->dropColumn(['statut', 'motifBlocage']);
-        });
+        // No action needed since columns were not added in this migration
     }
 };

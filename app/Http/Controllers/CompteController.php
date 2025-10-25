@@ -28,7 +28,7 @@ class CompteController extends Controller
     }
     /**
      * @OA\Get(
-     *     path="/api/v1/comptes",
+     *     path="/api/v1/ndiaye.mapathe/comptes",
      *     summary="Liste tous les comptes",
      *     description="Admin peut récupérer la liste de tous les comptes. Client peut récupérer la liste de ses comptes.",
      *     operationId="listComptes",
@@ -91,7 +91,7 @@ class CompteController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/v1/comptes",
+     *     path="/api/v1/ndiaye.mapathe/comptes",
      *     summary="Créer un nouveau compte",
      *     description="Créer un nouveau compte bancaire pour un client existant ou nouveau",
      *     operationId="createCompte",
@@ -153,7 +153,7 @@ class CompteController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/comptes/{compteId}",
+     *     path="/api/v1/ndiaye.mapathe/comptes/{compteId}",
      *     summary="Récupérer un compte spécifique",
      *     description="Admin peut récupérer n'importe quel compte. Client peut récupérer un de ses comptes. Recherche locale par défaut, puis serverless si non trouvé.",
      *     operationId="getCompte",
@@ -273,7 +273,7 @@ class CompteController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/clients/{client}/comptes",
+     *     path="/api/v1/ndiaye.mapathe/clients/{client}/comptes",
      *     summary="Récupérer les comptes d'un client",
      *     description="Récupérer tous les comptes associés à un client spécifique",
      *     operationId="getClientComptes",
@@ -330,7 +330,7 @@ class CompteController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/clients/{client}/comptes/{compte}",
+     *     path="/api/v1/ndiaye.mapathe/clients/{client}/comptes/{compte}",
      *     summary="Récupérer un compte spécifique d'un client",
      *     description="Récupérer les détails d'un compte spécifique appartenant à un client",
      *     operationId="getClientCompte",
