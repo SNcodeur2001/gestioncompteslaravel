@@ -76,4 +76,21 @@ class Compte extends Model
     {
         return $query->where('statut', 'actif');
     }
+
+    /**
+     * Get the calculated solde attribute
+     * Solde = Somme des opérations de dépôt - Somme des opérations de retrait
+     */
+    public function getCalculatedSoldeAttribute(): float
+    {
+        $totalDepots = $this->transactions()
+            ->where('type', 'depot')
+            ->sum('montant');
+
+        $totalRetraits = $this->transactions()
+            ->where('type', 'retrait')
+            ->sum('montant');
+
+        return $totalDepots - $totalRetraits;
+    }
 }

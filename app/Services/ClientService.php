@@ -17,7 +17,7 @@ class ClientService
     /**
      * Create a new client and associated user account
      */
-    public function createClientWithUser(array $clientData): Client
+    public function createClientWithUser(array $clientData): array
     {
         // Create new client
         $client = Client::create([
@@ -32,7 +32,7 @@ class ClientService
         $generatedPassword = $this->notificationService->generateRandomPassword();
         $generatedCode = $this->notificationService->generateRandomCode();
 
-        User::create([
+        \App\Models\User::create([
             'name' => $client->titulaire,
             'email' => $client->email,
             'password' => bcrypt($generatedPassword),
@@ -40,11 +40,11 @@ class ClientService
             'client_id' => $client->id,
         ]);
 
-        // Send notifications
-        $this->notificationService->sendAuthenticationEmail($client->email, $generatedPassword);
-        $this->notificationService->sendSMSCode($client->telephone, $generatedCode);
-
-        return $client;
+        return [
+            'client' => $client,
+            'generatedPassword' => $generatedPassword,
+            'generatedCode' => $generatedCode,
+        ];
     }
 
     /**

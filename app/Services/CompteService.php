@@ -135,12 +135,18 @@ class CompteService
     {
         // Handle client creation or retrieval
         $client = null;
+        $generatedPassword = null;
+        $generatedCode = null;
+
         if (isset($data['client']['id'])) {
             // Use existing client
             $client = $this->clientService->findClient($data['client']['id']);
         } else {
             // Create new client with user account
-            $client = $this->clientService->createClientWithUser($data['client']);
+            $result = $this->clientService->createClientWithUser($data['client']);
+            $client = $result['client'];
+            $generatedPassword = $result['generatedPassword'];
+            $generatedCode = $result['generatedCode'];
         }
 
         // Create the account
@@ -154,7 +160,14 @@ class CompteService
             'statut' => $data['statut'] ?? 'actif',
         ];
 
-        return Compte::create($compteData);
+        $compte = Compte::create($compteData);
+
+        // Dispatch event for notifications (only for new clients)
+        if ($generatedPassword && $generatedCode) {
+            \App\Events\CompteCreated::dispatch($compte, $generatedPassword, $generatedCode);
+        }
+
+        return $compte;
     }
 
     /**

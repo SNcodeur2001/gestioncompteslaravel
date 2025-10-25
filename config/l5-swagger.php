@@ -29,7 +29,7 @@ return [
     ],
     'defaults' => [
         'routes' => [
-            'docs' => 'docs',
+            'docs' => config('api.name') . '/api/documentation',
             'oauth2_callback' => 'api/oauth2-callback',
             'middleware' => [
                 'api' => ['swagger.security'],
@@ -44,7 +44,7 @@ return [
             'annotations' => [
                 base_path('app/Virtual'),
             ],
-
+            'base' => env('L5_SWAGGER_BASE_PATH', '/api/v1/' . config('api.name')),
         ],
 
         'scanOptions' => [

@@ -16,20 +16,25 @@ class CompteResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'client_id' => $this->client_id,
             'numero' => $this->numero,
+            'titulaire' => $this->client?->titulaire,
             'type' => $this->type,
-            'soldeInitial' => $this->soldeInitial,
-            'solde' => $this->solde,
+            'solde' => $this->calculated_solde, // Use calculated solde
             'devise' => $this->devise,
-            'created_at' => $this->created_at?->toISOString(),
-            'updated_at' => $this->updated_at?->toISOString(),
+            'dateCreation' => $this->created_at?->toISOString(),
             'statut' => $this->statut,
             'motifBlocage' => $this->motifBlocage,
-            'deleted_at' => $this->deleted_at?->toISOString(),
-            'archived' => $this->archived,
+            'metadata' => [
+                'derniereModification' => $this->updated_at?->toISOString(),
+                'version' => 1
+            ],
             'client' => $this->whenLoaded('client', function () {
-                return $this->client;
+                return [
+                    'id' => $this->client->id,
+                    'titulaire' => $this->client->titulaire,
+                    'email' => $this->client->email,
+                    'telephone' => $this->client->telephone,
+                ];
             }),
         ];
     }

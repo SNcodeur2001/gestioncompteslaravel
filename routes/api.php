@@ -25,8 +25,8 @@ Route::get('/health', function() {
     return response()->json(['status' => 'ok']);
 });
 
-// Version 1 API routes
-Route::prefix('v1')->middleware(['fake.auth', 'rating'])->group(function () {
+// API routes (prefix v1/ndiaye.mapathe already applied in RouteServiceProvider)
+Route::middleware(['fake.auth', 'rating', 'logging'])->group(function () {
     /**
      * Lister tous les comptes
      * Admin peut récupérer la liste de tous les comptes
@@ -39,13 +39,13 @@ Route::prefix('v1')->middleware(['fake.auth', 'rating'])->group(function () {
 });
 
 // Client-specific routes
-Route::prefix('v1')->middleware(['fake.auth', 'rating'])->group(function () {
+Route::middleware(['fake.auth', 'rating'])->group(function () {
     Route::get('clients/{client}/comptes', [CompteController::class, 'clientComptes']);
     Route::get('clients/{client}/comptes/{compte}', [CompteController::class, 'clientCompte']);
 });
 
 // Archived comptes routes
-Route::prefix('v1')->middleware(['fake.auth', 'rating'])->group(function () {
+Route::middleware(['fake.auth', 'rating'])->group(function () {
     /**
      * Lister tous les comptes archivés
      * La consultation de compte Epargne archiver se fait a partir du cloud
