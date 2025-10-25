@@ -358,17 +358,42 @@
                 ]
             }
         },
-        "/api/v1/comptes/{compte}": {
+        "/api/v1/comptes/{compteId}": {
             "get": {
                 "tags": [
                     "Comptes"
                 ],
                 "summary": "Récupérer un compte spécifique",
-                "description": "Récupérer les détails d'un compte spécifique par son ID",
+                "description": "Admin peut récupérer n'importe quel compte. Client peut récupérer un de ses comptes. Recherche locale par défaut, puis serverless si non trouvé.",
                 "operationId": "getCompte",
                 "parameters": [
                     {
-                        "name": "compte",
+                        "name": "X-Role",
+                        "in": "header",
+                        "description": "Rôle de l'utilisateur (admin/client)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "admin",
+                                "client"
+                            ],
+                            "example": "admin"
+                        }
+                    },
+                    {
+                        "name": "X-Telephone",
+                        "in": "header",
+                        "description": "Numéro de téléphone du client (requis pour le rôle client)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "^221[76|77|78|33|70][0-9]{7}$",
+                            "example": "221776543210"
+                        }
+                    },
+                    {
+                        "name": "compteId",
                         "in": "path",
                         "description": "ID du compte",
                         "required": true,
@@ -385,13 +410,9 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Compte récupéré avec succès"
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
                                         },
                                         "data": {
                                             "$ref": "#/components/schemas/Compte"
@@ -403,7 +424,43 @@
                         }
                     },
                     "404": {
-                        "description": "Compte non trouvé"
+                        "description": "Compte non trouvé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "error": {
+                                            "properties": {
+                                                "code": {
+                                                    "type": "string",
+                                                    "example": "COMPTE_NOT_FOUND"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Le compte avec l'ID spécifié n'existe pas"
+                                                },
+                                                "details": {
+                                                    "properties": {
+                                                        "compteId": {
+                                                            "type": "string",
+                                                            "format": "uuid",
+                                                            "example": "550e8400-e29b-41d4-a716-446655440000"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [

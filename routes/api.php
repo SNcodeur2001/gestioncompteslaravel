@@ -35,7 +35,15 @@ Route::middleware(['fake.auth', 'rating', 'logging'])->group(function () {
      */
     Route::get('comptes', [CompteController::class, 'index'])->name('comptes.index');
 
-    Route::apiResource('comptes', CompteController::class)->only(['store', 'show']);
+    /**
+     * Récupérer un compte spécifique par ID
+     * Admin peut récupérer n'importe quel compte
+     * Client peut récupérer un de ses comptes
+     * Recherche locale par défaut, puis serverless si non trouvé
+     */
+    Route::get('comptes/{compteId}', [CompteController::class, 'show'])->name('comptes.show');
+
+    Route::apiResource('comptes', CompteController::class)->only(['store']);
 });
 
 // Client-specific routes

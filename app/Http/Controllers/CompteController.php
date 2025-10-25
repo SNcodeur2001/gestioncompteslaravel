@@ -153,14 +153,28 @@ class CompteController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/comptes/{compte}",
+     *     path="/api/v1/comptes/{compteId}",
      *     summary="Récupérer un compte spécifique",
-     *     description="Récupérer les détails d'un compte spécifique par son ID",
+     *     description="Admin peut récupérer n'importe quel compte. Client peut récupérer un de ses comptes. Recherche locale par défaut, puis serverless si non trouvé.",
      *     operationId="getCompte",
      *     tags={"Comptes"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
-     *         name="compte",
+     *         name="X-Role",
+     *         in="header",
+     *         description="Rôle de l'utilisateur (admin/client)",
+     *         required=true,
+     *         @OA\Schema(type="string", enum={"admin", "client"}, example="admin")
+     *     ),
+     *     @OA\Parameter(
+     *         name="X-Telephone",
+     *         in="header",
+     *         description="Numéro de téléphone du client (requis pour le rôle client)",
+     *         required=false,
+     *         @OA\Schema(type="string", pattern="^221[76|77|78|33|70][0-9]{7}$", example="221776543210")
+     *     ),
+     *     @OA\Parameter(
+     *         name="compteId",
      *         in="path",
      *         description="ID du compte",
      *         required=true,
@@ -170,26 +184,83 @@ class CompteController extends Controller
      *         response=200,
      *         description="Compte récupéré avec succès",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(property="message", type="string", example="Compte récupéré avec succès"),
+     *             @OA\Property(property="success", type="boolean", example=true),
      *             @OA\Property(property="data", ref="#/components/schemas/Compte")
      *         )
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="Compte non trouvé"
+     *         description="Compte non trouvé",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="error", type="object",
+     *                 @OA\Property(property="code", type="string", example="COMPTE_NOT_FOUND"),
+     *                 @OA\Property(property="message", type="string", example="Le compte avec l'ID spécifié n'existe pas"),
+     *                 @OA\Property(property="details", type="object",
+     *                     @OA\Property(property="compteId", type="string", format="uuid", example="550e8400-e29b-41d4-a716-446655440000")
+     *                 )
+     *             )
+     *         )
      *     )
      * )
      */
-    public function show(Compte $compte): JsonResponse
+    public function show(Request $request, string $compteId): JsonResponse
     {
-        $compte = $this->compteService->findCompte($compte->id);
+        try {
+            $role = $request->header('X-Role');
+            $user = $request->attributes->get('user');
 
-        if (!$compte) {
-            return $this->notFoundResponse('Compte');
+            // Recherche du compte avec stratégie locale/serverless
+            $compte = $this->compteService->findCompte($compteId);
+
+            if (!$compte) {
+                return response()->json([
+                    'success' => false,
+                    'error' => [
+                        'code' => 'COMPTE_NOT_FOUND',
+                        'message' => 'Le compte avec l\'ID spécifié n\'existe pas',
+                        'details' => [
+                            'compteId' => $compteId
+                        ]
+                    ]
+                ], 404);
+            }
+
+            // Vérification des autorisations pour les clients
+            if ($user->role === 'client') {
+                // Vérifier que le compte appartient au client
+                if ($compte->client_id !== $user->client_id) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => [
+                            'code' => 'COMPTE_NOT_FOUND',
+                            'message' => 'Le compte avec l\'ID spécifié n\'existe pas',
+                            'details' => [
+                                'compteId' => $compteId
+                            ]
+                        ]
+                    ], 404);
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => new CompteResource($compte)
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error in CompteController@show: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => [
+                    'code' => 'INTERNAL_ERROR',
+                    'message' => 'Une erreur interne s\'est produite',
+                    'details' => [
+                        'compteId' => $compteId
+                    ]
+                ]
+            ], 500);
         }
-
-        return $this->successResponse(new CompteResource($compte));
     }
 
     /**
