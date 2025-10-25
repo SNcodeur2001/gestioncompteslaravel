@@ -28,18 +28,10 @@ class CheckArchivedComptes extends Command
     {
         $this->info('Vérification des comptes archivés...');
 
-        // Récupérer les comptes bloqués depuis plus de 30 jours (exemple)
-        $comptesToRestore = Compte::where('statut', 'bloque')
-            ->where('updated_at', '<', now()->subDays(30))
-            ->get();
+        // Dispatcher les jobs de vérification des dates de blocage
+        \App\Jobs\CheckAndArchiveExpiredBlocageJob::dispatch();
+        \App\Jobs\CheckAndRestoreExpiredBlocageJob::dispatch();
 
-        foreach ($comptesToRestore as $compte) {
-            $this->info("Restauration du compte: {$compte->numero}");
-
-            // Dispatcher le job de restauration
-            \App\Jobs\RestoreCompteJob::dispatch($compte->id);
-        }
-
-        $this->info('Vérification terminée. ' . $comptesToRestore->count() . ' comptes à restaurer.');
+        $this->info('Jobs de vérification des dates de blocage dispatchés.');
     }
 }

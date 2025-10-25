@@ -81,11 +81,26 @@ class NeonTransferService
                 });
                 Log::info("Compte {$compte->numero} transféré dans Neon");
 
-                // 3. Transférer les transactions vers Neon en batch
+                // 3. Transférer les transactions vers Neon en batch (seulement celles sans référence externe)
                 $transactions = $compte->transactions;
                 if ($transactions->isNotEmpty()) {
                     $transactionData = [];
                     foreach ($transactions as $transaction) {
+                        // Pour l'archivage, on ne transfère que les transactions qui n'ont pas de compte destination
+                        // ou dont le compte destination n'existe pas (pour éviter les contraintes FK)
+                        if ($transaction->compte_destination_id) {
+                            // Vérifier si le compte destination existe dans Neon
+                            $destExists = DB::connection('neon')
+                                ->table('comptes')
+                                ->where('id', $transaction->compte_destination_id)
+                                ->exists();
+
+                            if (!$destExists) {
+                                Log::warning("Transaction {$transaction->id} ignorée : compte destination {$transaction->compte_destination_id} non trouvé dans Neon");
+                                continue;
+                            }
+                        }
+
                         $data = $this->convertForPostgres([
                             'id' => $transaction->id,
                             'compte_id' => $transaction->compte_id,
@@ -107,25 +122,30 @@ class NeonTransferService
                         $transactionData[] = $data;
                     }
 
-                    // Batch insert avec transaction séparée
-                    DB::connection('neon')->transaction(function () use ($transactionData) {
-                        foreach (array_chunk($transactionData, 50) as $chunk) {
-                            DB::connection('neon')->table('transactions')->upsert(
-                                $chunk,
-                                ['id'],
-                                ['compte_id', 'type', 'montant', 'solde_avant', 'solde_apres', 'devise', 'description', 'compte_destination_id', 'updated_at']
-                            );
-                        }
-                    });
-                    Log::info("{$transactions->count()} transactions transférées en batch vers Neon");
+                    if (!empty($transactionData)) {
+                        // Batch insert avec transaction séparée
+                        DB::connection('neon')->transaction(function () use ($transactionData) {
+                            foreach (array_chunk($transactionData, 50) as $chunk) {
+                                DB::connection('neon')->table('transactions')->upsert(
+                                    $chunk,
+                                    ['id'],
+                                    ['compte_id', 'type', 'montant', 'solde_avant', 'solde_apres', 'devise', 'description', 'compte_destination_id', 'updated_at']
+                                );
+                            }
+                        });
+                        Log::info("{$transactions->count()} transactions vérifiées, " . count($transactionData) . " transférées en batch vers Neon");
+                    } else {
+                        Log::warning("Aucune transaction valide à transférer pour le compte {$compte->numero}");
+                    }
                 }
 
-                // 4. Marquer comme archivé en local
-                $compte->update(['archived' => true]);
-                Log::info("Compte {$compte->numero} marqué comme archivé en local");
+                // 4. Supprimer le compte et ses transactions de la base Render (soft delete)
+                $compte->delete(); // Soft delete du compte
+                $compte->transactions()->delete(); // Soft delete des transactions
+                Log::info("Compte {$compte->numero} et ses transactions supprimés de Render (soft delete)");
 
                 DB::commit();
-                Log::info("Transfert réussi du compte {$compte->numero} vers Neon");
+                Log::info("Archivage réussi du compte {$compte->numero} vers Neon");
                 return true;
 
             } catch (\Exception $e) {
@@ -187,9 +207,10 @@ class NeonTransferService
             $client->save();
             Log::info("Client {$client->titulaire} restauré/actualisé en local");
 
-            // 4. Restaurer ou créer le compte en local
+            // 4. Restaurer le compte en local (il devrait déjà exister en soft delete)
             $compte = Compte::withTrashed()->find($compteId);
             if (!$compte) {
+                Log::error("Compte {$compteId} non trouvé en local, création d'un nouveau compte");
                 $compte = new Compte();
                 $compte->id = $neonCompte->id;
             }
@@ -200,26 +221,20 @@ class NeonTransferService
             $compte->save();
             Log::info("Compte {$compte->numero} restauré en local");
 
-            // 5. Restaurer les transactions en batch
+            // 5. Restaurer les transactions en batch (restaurer les soft deleted)
             $neonTransactions = DB::connection('neon')
                 ->table('transactions')
                 ->where('compte_id', $compteId)
                 ->get();
 
             if ($neonTransactions->isNotEmpty()) {
-                $transactionData = [];
-                foreach ($neonTransactions as $neonTrans) {
-                    $transactionData[] = (array) $neonTrans;
-                }
+                $transactionIds = $neonTransactions->pluck('id')->toArray();
 
-                // Batch upsert pour les transactions
-                foreach (array_chunk($transactionData, 100) as $chunk) {
-                    Transaction::upsert(
-                        $chunk,
-                        ['id'],
-                        ['compte_id', 'type', 'montant', 'solde_avant', 'solde_apres', 'devise', 'description', 'compte_destination_id', 'created_at', 'updated_at']
-                    );
-                }
+                // Restaurer les transactions soft deleted existantes
+                Transaction::withTrashed()
+                    ->whereIn('id', $transactionIds)
+                    ->restore();
+
                 Log::info("{$neonTransactions->count()} transactions restaurées en local");
             }
 
