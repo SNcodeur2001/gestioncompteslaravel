@@ -9,7 +9,7 @@ return [
             ],
 
             'routes' => [
-                'api' => 'api/v1/' . config('api.name') . '/documentation',
+                'api' => 'api/documentation',
             ],
             'swagger_ui_assets_path' => config('app.env') === 'production'
                 ? env('APP_URL') . '/docs/asset/'
@@ -29,8 +29,8 @@ return [
     ],
     'defaults' => [
         'routes' => [
-            'docs' => 'api/v1/' . config('api.name') . '/documentation',
-            'oauth2_callback' => 'api/v1/' . config('api.name') . '/oauth2-callback',
+            'docs' => config('api.name') . '/api/documentation',
+            'oauth2_callback' => 'api/oauth2-callback',
             'middleware' => [
                 'api' => ['swagger.security'],
                 'web' => ['swagger.security'],
