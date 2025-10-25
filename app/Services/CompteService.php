@@ -4,11 +4,18 @@ namespace App\Services;
 
 use App\Models\Client;
 use App\Models\Compte;
+use App\Services\ClientService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
 class CompteService
 {
+    protected ClientService $clientService;
+
+    public function __construct(ClientService $clientService)
+    {
+        $this->clientService = $clientService;
+    }
     /**
      * Get comptes for a specific client with optional filters
      * Liste compte non supprimés type cheque ou compte Epargne Actif
@@ -122,7 +129,36 @@ class CompteService
     }
 
     /**
-     * Create a new compte
+     * Create a new compte with client handling
+     */
+    public function createCompteWithClient(array $data): Compte
+    {
+        // Handle client creation or retrieval
+        $client = null;
+        if (isset($data['client']['id'])) {
+            // Use existing client
+            $client = $this->clientService->findClient($data['client']['id']);
+        } else {
+            // Create new client with user account
+            $client = $this->clientService->createClientWithUser($data['client']);
+        }
+
+        // Create the account
+        $compteData = [
+            'numero' => $data['numero'] ?? null, // This will trigger the setNumeroAttribute mutator
+            'type' => $data['type'],
+            'soldeInitial' => $data['soldeInitial'],
+            'solde' => $data['solde'],
+            'devise' => $data['devise'],
+            'client_id' => $client->id,
+            'statut' => $data['statut'] ?? 'actif',
+        ];
+
+        return Compte::create($compteData);
+    }
+
+    /**
+     * Create a new compte (legacy method for backward compatibility)
      */
     public function createCompte(array $data): Compte
     {
@@ -171,11 +207,34 @@ class CompteService
                 $query->orderBy('solde', $order);
             } elseif ($sortBy === 'titulaire') {
                 $query->join('clients', 'comptes.client_id', '=', 'clients.id')
-                      ->orderBy('clients.titulaire', $order)
-                      ->select('comptes.*');
+                       ->orderBy('clients.titulaire', $order)
+                       ->select('comptes.*');
             }
         } else {
             $query->orderBy('created_at', 'desc');
         }
+    }
+
+    /**
+     * Get archived comptes with optional filters
+     */
+    public function getArchivedComptes(array $filters = []): LengthAwarePaginator
+    {
+        $query = Compte::with('client')
+            ->withoutGlobalScope('nonSupprimes')
+            ->where('archived', true)
+            ->whereNull('deleted_at');
+
+        // Apply filters
+        $this->applyFilters($query, $filters);
+
+        // Apply sorting
+        $this->applySorting($query, $filters);
+
+        // Apply pagination
+        $limit = min($filters['limit'] ?? 10, 100);
+        $page = $filters['page'] ?? 1;
+
+        return $query->paginate($limit, ['*'], 'page', $page);
     }
 }
