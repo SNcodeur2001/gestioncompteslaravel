@@ -13,10 +13,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/docs', function () {
-    return redirect(config('api.name') . '/api/documentation');
-});
-
 Route::get('/', function () {
     // Redirection vers la documentation API
     if (config('app.env') === 'production') {

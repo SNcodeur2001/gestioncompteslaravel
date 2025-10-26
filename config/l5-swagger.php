@@ -29,7 +29,7 @@ return [
     ],
     'defaults' => [
         'routes' => [
-            'docs' => config('api.name') . '/api/documentation',
+            'docs' => 'docs',
             'oauth2_callback' => 'api/oauth2-callback',
             'middleware' => [
                 'api' => ['swagger.security'],
