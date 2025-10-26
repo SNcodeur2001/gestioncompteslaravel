@@ -23,8 +23,8 @@ class LoggingMiddleware
         $endTime = microtime(true);
         $duration = round(($endTime - $startTime) * 1000, 2); // Convert to milliseconds
 
-        // Log operations de création et modification (POST/PATCH requests)
-        if ($request->isMethod('post') || $request->isMethod('patch')) {
+        // Log operations de création, modification et suppression (POST/PATCH/DELETE requests)
+        if ($request->isMethod('post') || $request->isMethod('patch') || $request->isMethod('delete')) {
             Log::info('Operation de création effectuée', [
                 'method' => $request->method(),
                 'uri' => $request->fullUrl(),

@@ -50,7 +50,17 @@ Route::middleware(['fake.auth', 'rating', 'logging'])->group(function () {
      */
     Route::patch('comptes/{compteId}', [CompteController::class, 'update'])->name('comptes.update');
 
-    Route::apiResource('comptes', CompteController::class)->only(['store']);
+    /**
+     * Créer un nouveau compte
+     */
+    Route::post('comptes', [CompteController::class, 'store'])->name('comptes.store');
+
+    /**
+     * Supprimer un compte (soft delete)
+     * Admin peut supprimer n'importe quel compte
+     * Le compte passe au statut 'ferme' avec dateFermeture
+     */
+    Route::delete('comptes/{compteId}', [CompteController::class, 'destroy'])->name('comptes.destroy');
 });
 
 // Client-specific routes

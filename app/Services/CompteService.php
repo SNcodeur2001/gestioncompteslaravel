@@ -7,6 +7,7 @@ use App\Models\Compte;
 use App\Services\ClientService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Log;
 
 class CompteService
 {
@@ -269,6 +270,35 @@ class CompteService
             }
         } else {
             $query->orderBy('created_at', 'desc');
+        }
+    }
+
+    /**
+     * Soft delete a compte (fermer le compte)
+     */
+    public function deleteCompte(string $compteId): ?Compte
+    {
+        try {
+            // Find the compte (without global scope to allow finding soft-deleted comptes)
+            $compte = Compte::with('client')->withoutGlobalScope('nonSupprimes')->find($compteId);
+
+            if (!$compte) {
+                return null;
+            }
+
+            // Update statut to 'ferme' and set dateFermeture
+            $compte->update([
+                'statut' => 'ferme',
+                'dateFermeture' => now(),
+            ]);
+
+            // Soft delete the compte
+            $compte->delete();
+
+            return $compte->fresh();
+        } catch (\Exception $e) {
+            Log::error('Error in CompteService::deleteCompte: ' . $e->getMessage());
+            throw $e;
         }
     }
 

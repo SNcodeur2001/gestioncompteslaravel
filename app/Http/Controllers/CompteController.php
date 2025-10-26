@@ -474,10 +474,95 @@ class CompteController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * @OA\Delete(
+     *     path="/api/v1/ndiaye.mapathe/comptes/{compteId}",
+     *     summary="Supprimer un compte (soft delete)",
+     *     description="Admin peut supprimer n'importe quel compte. Le compte passe au statut 'ferme' avec dateFermeture et fait l'objet d'un soft delete.",
+     *     operationId="deleteCompte",
+     *     tags={"Comptes"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="compteId",
+     *         in="path",
+     *         description="ID du compte à supprimer",
+     *         required=true,
+     *         @OA\Schema(type="string", format="uuid")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Compte supprimé avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Compte supprimé avec succès"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="id", type="string", format="uuid", example="550e8400-e29b-41d4-a716-446655440000"),
+     *                 @OA\Property(property="numeroCompte", type="string", example="C00123456"),
+     *                 @OA\Property(property="statut", type="string", example="ferme"),
+     *                 @OA\Property(property="dateFermeture", type="string", format="date-time", example="2025-10-19T11:15:00Z")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Compte non trouvé",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="error", type="object",
+     *                 @OA\Property(property="code", type="string", example="COMPTE_NOT_FOUND"),
+     *                 @OA\Property(property="message", type="string", example="Le compte avec l'ID spécifié n'existe pas")
+     *             )
+     *         )
+     *     )
+     * )
      */
-    public function destroy(string $id)
+    public function destroy(string $compteId): JsonResponse
     {
-        //
+        try {
+            Log::info('Attempting to delete compte with ID: ' . $compteId);
+
+            // Delete the compte (soft delete with status change)
+            $compte = $this->compteService->deleteCompte($compteId);
+
+            if (!$compte) {
+                Log::warning('Compte not found for deletion: ' . $compteId);
+                return response()->json([
+                    'success' => false,
+                    'error' => [
+                        'code' => 'COMPTE_NOT_FOUND',
+                        'message' => 'Le compte avec l\'ID spécifié n\'existe pas',
+                        'details' => [
+                            'compteId' => $compteId
+                        ]
+                    ]
+                ], 404);
+            }
+
+            Log::info('Compte deleted successfully: ' . $compteId);
+            return response()->json([
+                'success' => true,
+                'message' => 'Compte supprimé avec succès',
+                'data' => [
+                    'id' => $compte->id,
+                    'numeroCompte' => $compte->numero,
+                    'statut' => $compte->statut,
+                    'dateFermeture' => $compte->dateFermeture ? $compte->dateFermeture->toISOString() : null,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error in CompteController@destroy: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+            return response()->json([
+                'success' => false,
+                'error' => [
+                    'code' => 'INTERNAL_ERROR',
+                    'message' => 'Une erreur interne s\'est produite',
+                    'details' => [
+                        'compteId' => $compteId,
+                        'error' => $e->getMessage()
+                    ]
+                ]
+            ], 500);
+        }
     }
 }

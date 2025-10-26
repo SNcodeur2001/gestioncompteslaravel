@@ -13,7 +13,9 @@ class Compte extends Model
 
     protected $keyType = 'string';
     public $incrementing = false;
-    protected $fillable = ['numero', 'type', 'soldeInitial', 'solde', 'devise', 'client_id', 'statut', 'motifBlocage', 'archived', 'dateDebutBlocage', 'dateFinBlocage'];
+    protected $fillable = ['numero', 'type', 'soldeInitial', 'solde', 'devise', 'client_id', 'statut', 'motifBlocage', 'archived', 'dateDebutBlocage', 'dateFinBlocage', 'dateFermeture'];
+
+    protected $dates = ['dateDebutBlocage', 'dateFinBlocage', 'dateFermeture'];
 
     protected static function boot(): void
     {
