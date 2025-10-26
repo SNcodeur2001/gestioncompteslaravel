@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Constants\Messages;
 use App\Exceptions\CompteNotFoundException;
 use App\Http\Requests\StoreCompteRequest;
+use App\Http\Requests\UpdateCompteRequest;
 use App\Http\Resources\CompteResource;
 use App\Models\Client;
 use App\Models\Compte;
@@ -264,11 +265,105 @@ class CompteController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * @OA\Patch(
+     *     path="/api/v1/ndiaye.mapathe/comptes/{compteId}",
+     *     summary="Mettre à jour les informations du client d'un compte",
+     *     description="Admin peut modifier les informations client de n'importe quel compte. Tous les champs sont optionnels mais au moins un doit être fourni.",
+     *     operationId="updateCompteClient",
+     *     tags={"Comptes"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="compteId",
+     *         in="path",
+     *         description="ID du compte",
+     *         required=true,
+     *         @OA\Schema(type="string", format="uuid")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="titulaire", type="string", minLength=2, maxLength=255, example="Amadou Diallo Junior"),
+     *             @OA\Property(
+     *                 property="informationsClient",
+     *                 type="object",
+     *                 @OA\Property(property="telephone", type="string", pattern="^221[76|77|78|33|70][0-9]{7}$", example="+221771234568"),
+     *                 @OA\Property(property="email", type="string", format="email", example="amadou.diallo@email.com"),
+     *                 @OA\Property(property="password", type="string", minLength=8, example="newpassword123"),
+     *                 @OA\Property(property="nci", type="string", minLength=13, maxLength=13, example="1234567890123")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Compte mis à jour avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Compte mis à jour avec succès"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Compte")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Compte non trouvé",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="error", type="object",
+     *                 @OA\Property(property="code", type="string", example="COMPTE_NOT_FOUND"),
+     *                 @OA\Property(property="message", type="string", example="Le compte avec l'ID spécifié n'existe pas")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Erreur de validation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="error", type="object",
+     *                 @OA\Property(property="code", type="string", example="VALIDATION_ERROR"),
+     *                 @OA\Property(property="message", type="string", example="Les données fournies ne sont pas valides")
+     *             )
+     *         )
+     *     )
+     * )
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateCompteRequest $request, string $compteId): JsonResponse
     {
-        //
+        try {
+            // Update the compte client information
+            $compte = $this->compteService->updateCompteClient($compteId, $request->validated());
+
+            if (!$compte) {
+                return response()->json([
+                    'success' => false,
+                    'error' => [
+                        'code' => 'COMPTE_NOT_FOUND',
+                        'message' => 'Le compte avec l\'ID spécifié n\'existe pas',
+                        'details' => [
+                            'compteId' => $compteId
+                        ]
+                    ]
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Compte mis à jour avec succès',
+                'data' => new CompteResource($compte)
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error in CompteController@update: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => [
+                    'code' => 'INTERNAL_ERROR',
+                    'message' => 'Une erreur interne s\'est produite',
+                    'details' => [
+                        'compteId' => $compteId
+                    ]
+                ]
+            ], 500);
+        }
     }
 
     /**

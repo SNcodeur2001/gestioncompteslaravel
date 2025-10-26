@@ -171,6 +171,50 @@ class CompteService
     }
 
     /**
+     * Update compte client information
+     */
+    public function updateCompteClient(string $compteId, array $data): ?Compte
+    {
+        // Find the compte
+        $compte = $this->findCompte($compteId);
+
+        if (!$compte) {
+            return null;
+        }
+
+        // Update client information if provided
+        if (isset($data['informationsClient'])) {
+            $clientData = [];
+            $clientUpdates = $data['informationsClient'];
+
+            if (isset($clientUpdates['telephone'])) {
+                $clientData['telephone'] = $clientUpdates['telephone'];
+            }
+            if (isset($clientUpdates['email'])) {
+                $clientData['email'] = $clientUpdates['email'];
+            }
+            if (isset($clientUpdates['nci'])) {
+                $clientData['nci'] = $clientUpdates['nci'];
+            }
+            if (isset($clientUpdates['password'])) {
+                $clientData['password'] = bcrypt($clientUpdates['password']);
+            }
+
+            if (!empty($clientData)) {
+                $compte->client->update($clientData);
+            }
+        }
+
+        // Update titulaire if provided
+        if (isset($data['titulaire'])) {
+            $compte->client->update(['titulaire' => $data['titulaire']]);
+        }
+
+        // Reload the compte with updated client data
+        return $compte->fresh(['client']);
+    }
+
+    /**
      * Create a new compte (legacy method for backward compatibility)
      */
     public function createCompte(array $data): Compte

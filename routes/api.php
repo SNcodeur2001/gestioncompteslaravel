@@ -43,6 +43,13 @@ Route::middleware(['fake.auth', 'rating', 'logging'])->group(function () {
      */
     Route::get('comptes/{compteId}', [CompteController::class, 'show'])->name('comptes.show');
 
+    /**
+     * Mettre à jour les informations du client d'un compte
+     * Admin peut modifier n'importe quel compte
+     * Tous les champs sont optionnels mais au moins un doit être fourni
+     */
+    Route::patch('comptes/{compteId}', [CompteController::class, 'update'])->name('comptes.update');
+
     Route::apiResource('comptes', CompteController::class)->only(['store']);
 });
 
