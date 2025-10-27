@@ -577,7 +577,7 @@ class CompteController extends Controller
                     'id' => $compte->id,
                     'numeroCompte' => $compte->numero,
                     'statut' => $compte->statut,
-                    'dateFermeture' => $compte->dateFermeture ? $compte->dateFermeture->toISOString() : null,
+                    'dateFermeture' => $compte->dateFermeture ? \Carbon\Carbon::parse($compte->dateFermeture)->toISOString() : null,
                 ]
             ]);
 
