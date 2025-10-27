@@ -22,3 +22,8 @@ Route::get('/', function () {
     // Page d'accueil en local
     return view('welcome');
 });
+
+// Route de login factice pour éviter l'erreur "Route [login] not defined"
+Route::get('/login', function () {
+    return response()->json(['message' => 'Login not implemented - use API with X-Role header']);
+})->name('login');

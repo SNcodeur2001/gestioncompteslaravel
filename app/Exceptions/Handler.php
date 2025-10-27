@@ -27,6 +27,22 @@ class Handler extends ExceptionHandler
             //
         });
 
+        // Handle authentication exceptions for API routes
+        $this->renderable(function (\Illuminate\Auth\AuthenticationException $e, $request) {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'error' => [
+                        'code' => 'UNAUTHENTICATED',
+                        'message' => 'Non authentifié',
+                        'details' => [
+                            'message' => 'Utilisez les headers X-Role et X-Telephone pour vous authentifier'
+                        ]
+                    ]
+                ], 401);
+            }
+        });
+
         $this->renderable(function (\Illuminate\Database\Eloquent\ModelNotFoundException $e, $request) {
             if ($request->is('api/*') && $e->getModel() === \App\Models\Compte::class) {
                 return response()->json([

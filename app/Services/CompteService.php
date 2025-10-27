@@ -324,4 +324,73 @@ class CompteService
 
         return $query->paginate($limit, ['*'], 'page', $page);
     }
+
+    /**
+     * Bloquer un compte (préparation à l'archivage)
+     */
+    public function bloquerCompte(string $compteId, array $data): ?Compte
+    {
+        try {
+            // Find the compte
+            $compte = Compte::with('client')->find($compteId);
+
+            if (!$compte) {
+                return null;
+            }
+
+            // Vérifier que le compte n'est pas déjà bloqué
+            if ($compte->statut === 'bloque') {
+                throw new \Exception('Le compte est déjà bloqué.');
+            }
+
+            // Bloquer le compte
+            $compte->update([
+                'statut' => 'bloque',
+                'motifBlocage' => $data['motifBlocage'],
+                'dateDebutBlocage' => $data['dateDebutBlocage'],
+                'dateFinBlocage' => $data['dateFinBlocage'],
+            ]);
+
+            return $compte->fresh(['client']);
+        } catch (\Exception $e) {
+            Log::error('Error in CompteService::bloquerCompte: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Débloquer un compte (restauration)
+     */
+    public function debloquerCompte(string $compteId): ?Compte
+    {
+        try {
+            // Find the compte (including archived ones)
+            $compte = Compte::with('client')
+                ->withoutGlobalScope('nonSupprimes')
+                ->find($compteId);
+
+            if (!$compte) {
+                return null;
+            }
+
+            // Vérifier que le compte est bloqué
+            if ($compte->statut !== 'bloque') {
+                throw new \Exception('Le compte n\'est pas bloqué.');
+            }
+
+            // Débloquer le compte
+            $compte->update([
+                'statut' => 'actif',
+                'motifBlocage' => null,
+                'dateDebutBlocage' => null,
+                'dateFinBlocage' => null,
+                'archived' => false, // En cas où il était archivé
+            ]);
+
+            return $compte->fresh(['client']);
+        } catch (\Exception $e) {
+            Log::error('Error in CompteService::debloquerCompte: ' . $e->getMessage());
+            throw $e;
+        }
+    }
 }

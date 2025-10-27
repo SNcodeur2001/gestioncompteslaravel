@@ -78,6 +78,21 @@ Route::middleware(['fake.auth', 'rating'])->group(function () {
     Route::get('comptes/archives', [CompteArchiveController::class, 'index'])->name('comptes.archives');
 });
 
+// Account blocking/unblocking routes
+Route::middleware(['fake.auth', 'rating'])->group(function () {
+    /**
+     * Bloquer un compte
+     * Prépare le compte pour archivage automatique
+     */
+    Route::post('comptes/{compteId}/bloquer', [CompteController::class, 'bloquer'])->name('comptes.bloquer');
+
+    /**
+     * Débloquer un compte
+     * Annule le blocage et l'archivage automatique
+     */
+    Route::post('comptes/{compteId}/debloquer', [CompteController::class, 'debloquer'])->name('comptes.debloquer');
+});
+
 // Health check route (sans middleware pour les tests)
 Route::get('/health', function() {
     return response()->json(['status' => 'ok']);

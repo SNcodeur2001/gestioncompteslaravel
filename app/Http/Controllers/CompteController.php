@@ -565,4 +565,179 @@ class CompteController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/v1/ndiaye.mapathe/comptes/{compteId}/bloquer",
+     *     summary="Bloquer un compte",
+     *     description="Admin peut bloquer un compte en spécifiant un motif et les dates de blocage. Le compte sera automatiquement archivé à la date de début de blocage.",
+     *     operationId="bloquerCompte",
+     *     tags={"Comptes"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="compteId",
+     *         in="path",
+     *         description="ID du compte à bloquer",
+     *         required=true,
+     *         @OA\Schema(type="string", format="uuid")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="motifBlocage", type="string", minLength=5, maxLength=500, example="Suspicion de fraude"),
+     *             @OA\Property(property="dateDebutBlocage", type="string", format="date", example="2025-10-30"),
+     *             @OA\Property(property="dateFinBlocage", type="string", format="date", example="2025-11-30")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Compte bloqué avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Compte bloqué avec succès"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Compte")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Compte non trouvé",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="error", type="object",
+     *                 @OA\Property(property="code", type="string", example="COMPTE_NOT_FOUND"),
+     *                 @OA\Property(property="message", type="string", example="Le compte avec l'ID spécifié n'existe pas")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Erreur de validation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="error", type="object",
+     *                 @OA\Property(property="code", type="string", example="VALIDATION_ERROR"),
+     *                 @OA\Property(property="message", type="string", example="Les données fournies ne sont pas valides")
+     *             )
+     *         )
+     *     )
+     * )
+     */
+    public function bloquer(\App\Http\Requests\BloquerCompteRequest $request, string $compteId): JsonResponse
+    {
+        try {
+            // Bloquer le compte
+            $compte = $this->compteService->bloquerCompte($compteId, $request->validated());
+
+            if (!$compte) {
+                return response()->json([
+                    'success' => false,
+                    'error' => [
+                        'code' => 'COMPTE_NOT_FOUND',
+                        'message' => 'Le compte avec l\'ID spécifié n\'existe pas',
+                        'details' => [
+                            'compteId' => $compteId
+                        ]
+                    ]
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Compte bloqué avec succès',
+                'data' => new CompteResource($compte)
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error in CompteController@bloquer: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => [
+                    'code' => 'INTERNAL_ERROR',
+                    'message' => 'Une erreur interne s\'est produite',
+                    'details' => [
+                        'compteId' => $compteId,
+                        'error' => $e->getMessage()
+                    ]
+                ]
+            ], 500);
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/v1/ndiaye.mapathe/comptes/{compteId}/debloquer",
+     *     summary="Débloquer un compte",
+     *     description="Admin peut débloquer un compte bloqué, ce qui le remet en statut actif et annule l'archivage automatique.",
+     *     operationId="debloquerCompte",
+     *     tags={"Comptes"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="compteId",
+     *         in="path",
+     *         description="ID du compte à débloquer",
+     *         required=true,
+     *         @OA\Schema(type="string", format="uuid")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Compte débloqué avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Compte débloqué avec succès"),
+     *             @OA\Property(property="data", ref="#/components/schemas/Compte")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Compte non trouvé",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="error", type="object",
+     *                 @OA\Property(property="code", type="string", example="COMPTE_NOT_FOUND"),
+     *                 @OA\Property(property="message", type="string", example="Le compte avec l'ID spécifié n'existe pas")
+     *             )
+     *         )
+     *     )
+     * )
+     */
+    public function debloquer(string $compteId): JsonResponse
+    {
+        try {
+            // Débloquer le compte
+            $compte = $this->compteService->debloquerCompte($compteId);
+
+            if (!$compte) {
+                return response()->json([
+                    'success' => false,
+                    'error' => [
+                        'code' => 'COMPTE_NOT_FOUND',
+                        'message' => 'Le compte avec l\'ID spécifié n\'existe pas',
+                        'details' => [
+                            'compteId' => $compteId
+                        ]
+                    ]
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Compte débloqué avec succès',
+                'data' => new CompteResource($compte)
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error in CompteController@debloquer: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => [
+                    'code' => 'INTERNAL_ERROR',
+                    'message' => 'Une erreur interne s\'est produite',
+                    'details' => [
+                        'compteId' => $compteId,
+                        'error' => $e->getMessage()
+                    ]
+                ]
+            ], 500);
+        }
+    }
 }
