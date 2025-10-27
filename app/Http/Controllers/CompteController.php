@@ -47,7 +47,7 @@ class CompteController extends Controller
      *         in="header",
      *         description="Numéro de téléphone du client (requis pour le rôle client)",
      *         required=false,
-     *         @OA\Schema(type="string", pattern="^221[76|77|78|33|70][0-9]{7}$", example="221776543210")
+     *         @OA\Schema(type="string", pattern="^\\+221[0-9]{9}$", example="+221776543210")
      *     ),
      *     @OA\Response(
      *         response=200,
@@ -101,6 +101,7 @@ class CompteController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
+     *             required={"type", "soldeInitial", "solde", "devise", "client"},
      *             @OA\Property(property="type", type="string", enum={"epargne", "cheque", "courant"}, example="cheque"),
      *             @OA\Property(property="soldeInitial", type="number", minimum=10000, example=50000),
      *             @OA\Property(property="solde", type="number", minimum=0, example=50000),
@@ -108,13 +109,22 @@ class CompteController extends Controller
      *             @OA\Property(
      *                 property="client",
      *                 type="object",
-     *                 description="Informations du client (obligatoire si nouveau client)",
-     *                 @OA\Property(property="id", type="string", format="uuid", nullable=true, description="ID du client existant (optionnel)"),
-     *                 @OA\Property(property="titulaire", type="string", minLength=2, maxLength=255, example="Mamadou Diop"),
-     *                 @OA\Property(property="nci", type="string", minLength=13, maxLength=13, example="1234567890123"),
-     *                 @OA\Property(property="email", type="string", format="email", example="mamadou.diop@email.com"),
-     *                 @OA\Property(property="telephone", type="string", pattern="^221[76|77|78|33|70][0-9]{7}$", example="221776543210"),
-     *                 @OA\Property(property="adresse", type="string", minLength=5, maxLength=500, example="123 Rue Kermel, Plateau, Dakar")
+     *                 description="Informations du client",
+     *                 oneOf={
+     *                     @OA\Schema(
+     *                         title="Client existant",
+     *                         @OA\Property(property="id", type="string", format="uuid", example="550e8400-e29b-41d4-a716-446655440000", description="ID du client existant")
+     *                     ),
+     *                     @OA\Schema(
+     *                         title="Nouveau client",
+     *                         required={"titulaire", "nci", "email", "telephone", "adresse"},
+     *                         @OA\Property(property="titulaire", type="string", minLength=2, maxLength=255, example="Mamadou Diop"),
+     *                         @OA\Property(property="nci", type="string", minLength=13, maxLength=13, pattern="^[12]\\d{12}$", example="1234567890123", description="13 chiffres commençant par 1 ou 2"),
+     *                         @OA\Property(property="email", type="string", format="email", example="mamadou.diop@email.com"),
+     *                         @OA\Property(property="telephone", type="string", pattern="^\\+221[0-9]{9}$", example="+221776543210", description="Format +221XXXXXXXXX (9 chiffres après +221)"),
+     *                         @OA\Property(property="adresse", type="string", minLength=5, maxLength=500, example="123 Rue Kermel, Plateau, Dakar")
+     *                     )
+     *                 }
      *             )
      *         )
      *     ),
@@ -129,7 +139,29 @@ class CompteController extends Controller
      *     ),
      *     @OA\Response(
      *         response=422,
-     *         description="Erreur de validation"
+     *         description="Erreur de validation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Le client sélectionné n'existe pas. (and 2 more errors)"),
+     *             @OA\Property(
+     *                 property="errors",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="client.id",
+     *                     type="array",
+     *                     @OA\Items(type="string", example="Le client sélectionné n'existe pas.")
+     *                 ),
+     *                 @OA\Property(
+     *                     property="client.nci",
+     *                     type="array",
+     *                     @OA\Items(type="string", example="Ce numéro de carte d'identité est déjà utilisé.")
+     *                 ),
+     *                 @OA\Property(
+     *                     property="client.telephone",
+     *                     type="array",
+     *                     @OA\Items(type="string", example="Le numéro de téléphone doit être au format +221XXXXXXXXX (9 chiffres après +221).")
+     *                 )
+     *             )
+     *         )
      *     )
      * )
      */
@@ -172,14 +204,14 @@ class CompteController extends Controller
      *         in="header",
      *         description="Numéro de téléphone du client (requis pour le rôle client)",
      *         required=false,
-     *         @OA\Schema(type="string", pattern="^221[76|77|78|33|70][0-9]{7}$", example="221776543210")
+     *         @OA\Schema(type="string", pattern="^\\+221[0-9]{9}$", example="+221776543210")
      *     ),
      *     @OA\Parameter(
      *         name="compteId",
      *         in="path",
      *         description="ID du compte",
      *         required=true,
-     *         @OA\Schema(type="string", format="uuid")
+     *         @OA\Schema(type="string", format="uuid", example="550e8400-e29b-41d4-a716-446655440001")
      *     ),
      *     @OA\Response(
      *         response=200,
@@ -198,7 +230,7 @@ class CompteController extends Controller
      *                 @OA\Property(property="code", type="string", example="COMPTE_NOT_FOUND"),
      *                 @OA\Property(property="message", type="string", example="Le compte avec l'ID spécifié n'existe pas"),
      *                 @OA\Property(property="details", type="object",
-     *                     @OA\Property(property="compteId", type="string", format="uuid", example="550e8400-e29b-41d4-a716-446655440000")
+     *                     @OA\Property(property="compteId", type="string", format="uuid", example="550e8400-e29b-41d4-a716-446655440001")
      *                 )
      *             )
      *         )
@@ -277,7 +309,7 @@ class CompteController extends Controller
      *         in="path",
      *         description="ID du compte",
      *         required=true,
-     *         @OA\Schema(type="string", format="uuid")
+     *         @OA\Schema(type="string", format="uuid", example="550e8400-e29b-41d4-a716-446655440001")
      *     ),
      *     @OA\RequestBody(
      *         required=true,
@@ -286,10 +318,10 @@ class CompteController extends Controller
      *             @OA\Property(
      *                 property="informationsClient",
      *                 type="object",
-     *                 @OA\Property(property="telephone", type="string", pattern="^221[76|77|78|33|70][0-9]{7}$", example="+221771234568"),
+     *                 @OA\Property(property="telephone", type="string", pattern="^\\+221[0-9]{9}$", example="+221771234568"),
      *                 @OA\Property(property="email", type="string", format="email", example="amadou.diallo@email.com"),
      *                 @OA\Property(property="password", type="string", minLength=8, example="newpassword123"),
-     *                 @OA\Property(property="nci", type="string", minLength=13, maxLength=13, example="1234567890123")
+     *                 @OA\Property(property="nci", type="string", minLength=13, maxLength=13, pattern="^[12]\\d{12}$", example="1234567890123")
      *             )
      *         )
      *     ),
@@ -379,7 +411,7 @@ class CompteController extends Controller
      *         in="path",
      *         description="ID du client",
      *         required=true,
-     *         @OA\Schema(type="string", format="uuid")
+     *         @OA\Schema(type="string", format="uuid", example="550e8400-e29b-41d4-a716-446655440000")
      *     ),
      *     @OA\Parameter(
      *         name="page",
@@ -443,7 +475,7 @@ class CompteController extends Controller
      *         in="path",
      *         description="ID du compte",
      *         required=true,
-     *         @OA\Schema(type="string", format="uuid")
+     *         @OA\Schema(type="string", format="uuid", example="550e8400-e29b-41d4-a716-446655440001")
      *     ),
      *     @OA\Response(
      *         response=200,
@@ -486,7 +518,7 @@ class CompteController extends Controller
      *         in="path",
      *         description="ID du compte à supprimer",
      *         required=true,
-     *         @OA\Schema(type="string", format="uuid")
+     *         @OA\Schema(type="string", format="uuid", example="550e8400-e29b-41d4-a716-446655440001")
      *     ),
      *     @OA\Response(
      *         response=200,
@@ -495,10 +527,10 @@ class CompteController extends Controller
      *             @OA\Property(property="success", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Compte supprimé avec succès"),
      *             @OA\Property(property="data", type="object",
-     *                 @OA\Property(property="id", type="string", format="uuid", example="550e8400-e29b-41d4-a716-446655440000"),
-     *                 @OA\Property(property="numeroCompte", type="string", example="C00123456"),
+     *                 @OA\Property(property="id", type="string", format="uuid", example="550e8400-e29b-41d4-a716-446655440001"),
+     *                 @OA\Property(property="numeroCompte", type="string", example="COMP-123456"),
      *                 @OA\Property(property="statut", type="string", example="ferme"),
-     *                 @OA\Property(property="dateFermeture", type="string", format="date-time", example="2025-10-19T11:15:00Z")
+     *                 @OA\Property(property="dateFermeture", type="string", format="date-time", example="2025-10-27T09:23:00Z")
      *             )
      *         )
      *     ),
@@ -579,11 +611,12 @@ class CompteController extends Controller
      *         in="path",
      *         description="ID du compte à bloquer",
      *         required=true,
-     *         @OA\Schema(type="string", format="uuid")
+     *         @OA\Schema(type="string", format="uuid", example="550e8400-e29b-41d4-a716-446655440001")
      *     ),
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
+     *             required={"motifBlocage", "dateDebutBlocage", "dateFinBlocage"},
      *             @OA\Property(property="motifBlocage", type="string", minLength=5, maxLength=500, example="Suspicion de fraude"),
      *             @OA\Property(property="dateDebutBlocage", type="string", format="date", example="2025-10-30"),
      *             @OA\Property(property="dateFinBlocage", type="string", format="date", example="2025-11-30")
@@ -676,7 +709,7 @@ class CompteController extends Controller
      *         in="path",
      *         description="ID du compte à débloquer",
      *         required=true,
-     *         @OA\Schema(type="string", format="uuid")
+     *         @OA\Schema(type="string", format="uuid", example="550e8400-e29b-41d4-a716-446655440001")
      *     ),
      *     @OA\Response(
      *         response=200,

@@ -193,8 +193,8 @@
                         "required": false,
                         "schema": {
                             "type": "string",
-                            "pattern": "^221[76|77|78|33|70][0-9]{7}$",
-                            "example": "221776543210"
+                            "pattern": "^\\\\+221[0-9]{9}$",
+                            "example": "+221776543210"
                         }
                     }
                 ],
@@ -247,6 +247,13 @@
                     "content": {
                         "application/json": {
                             "schema": {
+                                "required": [
+                                    "type",
+                                    "soldeInitial",
+                                    "solde",
+                                    "devise",
+                                    "client"
+                                ],
                                 "properties": {
                                     "type": {
                                         "type": "string",
@@ -278,44 +285,66 @@
                                         "example": "XOF"
                                     },
                                     "client": {
-                                        "description": "Informations du client (obligatoire si nouveau client)",
-                                        "properties": {
-                                            "id": {
-                                                "description": "ID du client existant (optionnel)",
-                                                "type": "string",
-                                                "format": "uuid",
-                                                "nullable": true
+                                        "description": "Informations du client",
+                                        "type": "object",
+                                        "oneOf": [
+                                            {
+                                                "title": "Client existant",
+                                                "properties": {
+                                                    "id": {
+                                                        "description": "ID du client existant",
+                                                        "type": "string",
+                                                        "format": "uuid",
+                                                        "example": "550e8400-e29b-41d4-a716-446655440000"
+                                                    }
+                                                },
+                                                "type": "object"
                                             },
-                                            "titulaire": {
-                                                "type": "string",
-                                                "maxLength": 255,
-                                                "minLength": 2,
-                                                "example": "Mamadou Diop"
-                                            },
-                                            "nci": {
-                                                "type": "string",
-                                                "maxLength": 13,
-                                                "minLength": 13,
-                                                "example": "1234567890123"
-                                            },
-                                            "email": {
-                                                "type": "string",
-                                                "format": "email",
-                                                "example": "mamadou.diop@email.com"
-                                            },
-                                            "telephone": {
-                                                "type": "string",
-                                                "pattern": "^221[76|77|78|33|70][0-9]{7}$",
-                                                "example": "221776543210"
-                                            },
-                                            "adresse": {
-                                                "type": "string",
-                                                "maxLength": 500,
-                                                "minLength": 5,
-                                                "example": "123 Rue Kermel, Plateau, Dakar"
+                                            {
+                                                "title": "Nouveau client",
+                                                "required": [
+                                                    "titulaire",
+                                                    "nci",
+                                                    "email",
+                                                    "telephone",
+                                                    "adresse"
+                                                ],
+                                                "properties": {
+                                                    "titulaire": {
+                                                        "type": "string",
+                                                        "maxLength": 255,
+                                                        "minLength": 2,
+                                                        "example": "Mamadou Diop"
+                                                    },
+                                                    "nci": {
+                                                        "description": "13 chiffres commençant par 1 ou 2",
+                                                        "type": "string",
+                                                        "maxLength": 13,
+                                                        "minLength": 13,
+                                                        "pattern": "^[12]\\\\d{12}$",
+                                                        "example": "1234567890123"
+                                                    },
+                                                    "email": {
+                                                        "type": "string",
+                                                        "format": "email",
+                                                        "example": "mamadou.diop@email.com"
+                                                    },
+                                                    "telephone": {
+                                                        "description": "Format +221XXXXXXXXX (9 chiffres après +221)",
+                                                        "type": "string",
+                                                        "pattern": "^\\\\+221[0-9]{9}$",
+                                                        "example": "+221776543210"
+                                                    },
+                                                    "adresse": {
+                                                        "type": "string",
+                                                        "maxLength": 500,
+                                                        "minLength": 5,
+                                                        "example": "123 Rue Kermel, Plateau, Dakar"
+                                                    }
+                                                },
+                                                "type": "object"
                                             }
-                                        },
-                                        "type": "object"
+                                        ]
                                     }
                                 },
                                 "type": "object"
@@ -348,7 +377,46 @@
                         }
                     },
                     "422": {
-                        "description": "Erreur de validation"
+                        "description": "Erreur de validation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Le client sélectionné n'existe pas. (and 2 more errors)"
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "client.id": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Le client sélectionné n'existe pas."
+                                                    }
+                                                },
+                                                "client.nci": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Ce numéro de carte d'identité est déjà utilisé."
+                                                    }
+                                                },
+                                                "client.telephone": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "Le numéro de téléphone doit être au format +221XXXXXXXXX (9 chiffres après +221)."
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -388,8 +456,8 @@
                         "required": false,
                         "schema": {
                             "type": "string",
-                            "pattern": "^221[76|77|78|33|70][0-9]{7}$",
-                            "example": "221776543210"
+                            "pattern": "^\\\\+221[0-9]{9}$",
+                            "example": "+221776543210"
                         }
                     },
                     {
@@ -399,7 +467,8 @@
                         "required": true,
                         "schema": {
                             "type": "string",
-                            "format": "uuid"
+                            "format": "uuid",
+                            "example": "550e8400-e29b-41d4-a716-446655440001"
                         }
                     }
                 ],
@@ -448,7 +517,7 @@
                                                         "compteId": {
                                                             "type": "string",
                                                             "format": "uuid",
-                                                            "example": "550e8400-e29b-41d4-a716-446655440000"
+                                                            "example": "550e8400-e29b-41d4-a716-446655440001"
                                                         }
                                                     },
                                                     "type": "object"
@@ -484,7 +553,8 @@
                         "required": true,
                         "schema": {
                             "type": "string",
-                            "format": "uuid"
+                            "format": "uuid",
+                            "example": "550e8400-e29b-41d4-a716-446655440001"
                         }
                     }
                 ],
@@ -508,11 +578,11 @@
                                                 "id": {
                                                     "type": "string",
                                                     "format": "uuid",
-                                                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                                                    "example": "550e8400-e29b-41d4-a716-446655440001"
                                                 },
                                                 "numeroCompte": {
                                                     "type": "string",
-                                                    "example": "C00123456"
+                                                    "example": "COMP-123456"
                                                 },
                                                 "statut": {
                                                     "type": "string",
@@ -521,7 +591,7 @@
                                                 "dateFermeture": {
                                                     "type": "string",
                                                     "format": "date-time",
-                                                    "example": "2025-10-19T11:15:00Z"
+                                                    "example": "2025-10-27T09:23:00Z"
                                                 }
                                             },
                                             "type": "object"
@@ -583,7 +653,8 @@
                         "required": true,
                         "schema": {
                             "type": "string",
-                            "format": "uuid"
+                            "format": "uuid",
+                            "example": "550e8400-e29b-41d4-a716-446655440001"
                         }
                     }
                 ],
@@ -603,7 +674,7 @@
                                         "properties": {
                                             "telephone": {
                                                 "type": "string",
-                                                "pattern": "^221[76|77|78|33|70][0-9]{7}$",
+                                                "pattern": "^\\\\+221[0-9]{9}$",
                                                 "example": "+221771234568"
                                             },
                                             "email": {
@@ -620,6 +691,7 @@
                                                 "type": "string",
                                                 "maxLength": 13,
                                                 "minLength": 13,
+                                                "pattern": "^[12]\\\\d{12}$",
                                                 "example": "1234567890123"
                                             }
                                         },
@@ -737,7 +809,8 @@
                         "required": true,
                         "schema": {
                             "type": "string",
-                            "format": "uuid"
+                            "format": "uuid",
+                            "example": "550e8400-e29b-41d4-a716-446655440000"
                         }
                     },
                     {
@@ -838,7 +911,8 @@
                         "required": true,
                         "schema": {
                             "type": "string",
-                            "format": "uuid"
+                            "format": "uuid",
+                            "example": "550e8400-e29b-41d4-a716-446655440001"
                         }
                     }
                 ],
@@ -893,7 +967,8 @@
                         "required": true,
                         "schema": {
                             "type": "string",
-                            "format": "uuid"
+                            "format": "uuid",
+                            "example": "550e8400-e29b-41d4-a716-446655440001"
                         }
                     }
                 ],
@@ -902,6 +977,11 @@
                     "content": {
                         "application/json": {
                             "schema": {
+                                "required": [
+                                    "motifBlocage",
+                                    "dateDebutBlocage",
+                                    "dateFinBlocage"
+                                ],
                                 "properties": {
                                     "motifBlocage": {
                                         "type": "string",
@@ -1031,7 +1111,8 @@
                         "required": true,
                         "schema": {
                             "type": "string",
-                            "format": "uuid"
+                            "format": "uuid",
+                            "example": "550e8400-e29b-41d4-a716-446655440001"
                         }
                     }
                 ],
@@ -1114,6 +1195,7 @@
                     },
                     "nci": {
                         "type": "string",
+                        "pattern": "^[12]\\\\d{12}$",
                         "example": "1234567890123"
                     },
                     "email": {
@@ -1123,7 +1205,8 @@
                     },
                     "telephone": {
                         "type": "string",
-                        "example": "221776543210"
+                        "pattern": "^\\\\+221[0-9]{9}$",
+                        "example": "+221776543210"
                     },
                     "adresse": {
                         "type": "string",
