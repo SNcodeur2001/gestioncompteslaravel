@@ -36,7 +36,7 @@ class Handler extends ExceptionHandler
                         'code' => 'UNAUTHENTICATED',
                         'message' => 'Non authentifié',
                         'details' => [
-                            'message' => 'Utilisez les headers X-Role et X-Telephone pour vous authentifier'
+                            'message' => 'Vous devez être connecté pour accéder à cette ressource'
                         ]
                     ]
                 ], 401);

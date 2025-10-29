@@ -137,10 +137,7 @@
             requestInterceptor: function(request) {
                 request.headers['X-CSRF-TOKEN'] = '{{ csrf_token() }}';
                 request.headers['Accept'] = 'application/json';
-                // Add role header for testing
-                if (!request.headers['X-Role']) {
-                    request.headers['X-Role'] = 'admin';
-                }
+                // Headers d'authentification Bearer gérés automatiquement par Swagger UI
                 return request;
             },
 
