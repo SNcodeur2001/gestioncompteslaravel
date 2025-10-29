@@ -23,7 +23,7 @@ return [
                     base_path('app'),
                 ],
                 'excludes' => [],
-                'base' => env('APP_URL'),
+                'base' => env('L5_SWAGGER_BASE_PATH', env('APP_URL')),
             ],
         ],
     ],
@@ -44,7 +44,7 @@ return [
             'annotations' => [
                 base_path('app/Virtual'),
             ],
-            'base' => env('L5_SWAGGER_BASE_PATH', '/api/v1/' . config('api.name')),
+            'base' => env('L5_SWAGGER_BASE_PATH', null),
         ],
 
         'scanOptions' => [

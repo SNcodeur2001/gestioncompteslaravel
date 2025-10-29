@@ -34,3 +34,10 @@ services:
           type: web
           name: gestioncomptes-api
           property: host
+      - key: API_NAME
+        value: ndiaye.mapathe
+      - key: L5_SWAGGER_BASE_PATH
+        fromService:
+          type: web
+          name: gestioncomptes-api
+          property: host
