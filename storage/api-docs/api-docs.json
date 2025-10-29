@@ -22,7 +22,7 @@
         }
     ],
     "paths": {
-        "/auth/login": {
+        "/api/v1/ndiaye.mapathe/auth/login": {
             "post": {
                 "tags": [
                     "Authentification"

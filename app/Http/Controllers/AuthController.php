@@ -13,7 +13,7 @@ class AuthController extends Controller
 {
     /**
      * @OA\Post(
-     *     path="/auth/login",
+     *     path="/api/v1/ndiaye.mapathe/auth/login",
      *     summary="Connexion utilisateur",
      *     description="Authentifier un utilisateur et retourner un token d'accès JWT",
      *     operationId="login",
