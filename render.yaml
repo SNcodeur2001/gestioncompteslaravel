@@ -41,73 +41,7 @@ services:
           type: web
           name: gestioncomptes-api
           property: host
-      - key: PASSPORT_PRIVATE_KEY
-        value: |
-          -----BEGIN PRIVATE KEY-----
-          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
-          GPOyh6zl3CUt1NOQuipMbIFfrcxCKR4L
-          -----END PRIVATE KEY-----
-      - key: PASSPORT_PUBLIC_KEY
-        value: |
-          -----BEGIN PUBLIC KEY-----
-          MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA+lgwGJagQDdcsL8gEFho
-          /A5puryLn0An5dbEUKMUEBfsmzDNC1hm2JZl4w9QEle9uWoBiOB3qTBTDfIy+57l
-          5p10dRVAgoa1iJrkuRridYTp/1mqvfhU3wGlo4xRHOn+Wd6zHci67uJ9cvPlwYyN
-          ugsVCD8F/AzDRZfkSkCg3CIEIXU9XaIrO/ojxGIeHxOrooqAYVbwntJOOdKcQUAm
-          e+TX8gVA0NtP9DPJWCpNtFH6z/OTn+vhBEmCtfHvrIEo1I6BXPSL/3ZOjoSN81fY
-          ipJ3NucMkREVkeug6dw0+NLo8eh6IeN6NIHkI9Zwcd6K6BvkCWMzOI2DPmRDq1LM
-          ZgWUnwAVzqIz37ollRD1nfSRavFItje/xeGHTemw9ZAn6hr3OxTfeseD2HY9IIQP
-          1IzdSOQG8zFoWH3OE49ouAWIL19FL+2LDuU8Wuvn8GUVawP1GRXCiDDwybw57KTF
-          b9rzPHoMm766h+k8LeGgVqoks4hVRBUdYLvdAZn3d12c5KlEYHw/utF38ACIQWS6
-          Z6eK65kz9F1Dyc4AjTqhUIIiaQmZDzbQpywqrcF06WLm3Vs/Uk4PderDHdcBBTYq
-          fR/m6KeiMNU4tAXmBSpz24Y4aQmCSNQs/DnsKK4fHF3nM97V/yhYy+tjVc5htJaf
-          BUZEorEN6wX4CmcGhgVouPECAwEAAQ==
-          -----END PUBLIC KEY-----
+      - key: PASSPORT_PERSONAL_ACCESS_CLIENT_ID
+        value: "4"
+      - key: PASSPORT_PERSONAL_ACCESS_CLIENT_SECRET
+        value: "Rj5Y0myEKe5XpMLaU79CLizsxYSgxVIyg0lmo6Ui"
