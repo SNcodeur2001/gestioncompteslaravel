@@ -14,7 +14,7 @@
             "description": "Production Server"
         },
         {
-            "url": "http://localhost:8000/api/v1/ndiaye.mapathe",
+            "url": "http://localhost:8000",
             "description": "Local Development"
         },
         {
