@@ -48,6 +48,9 @@ Route::prefix('auth')->group(function () {
     Route::middleware('auth:api')->post('logout', [App\Http\Controllers\AuthController::class, 'logout']);
 });
 
+// Swagger auth route (without middleware for testing)
+Route::post('auth/login', [App\Http\Controllers\AuthController::class, 'login'])->name('swagger.auth.login');
+
 // API routes (prefix v1/ndiaye.mapathe already applied in RouteServiceProvider)
 Route::middleware(['auth:api', 'logging'])->group(function () {
     /**

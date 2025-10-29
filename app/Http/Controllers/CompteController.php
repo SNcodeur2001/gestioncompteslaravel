@@ -698,8 +698,8 @@ class CompteController extends Controller
         try {
             Log::info('Attempting to delete compte with ID: ' . $compteId);
 
-            // Delete the compte (soft delete with status change)
-            $compte = $this->compteService->deleteCompte($compteId);
+            // Vérifier que le compte existe et est actif
+            $compte = Compte::withoutGlobalScope('nonSupprimes')->find($compteId);
 
             if (!$compte) {
                 Log::warning('Compte not found for deletion: ' . $compteId);
@@ -714,6 +714,24 @@ class CompteController extends Controller
                     ]
                 ], 404);
             }
+
+            // Vérifier que le compte est actif
+            if ($compte->statut !== 'actif') {
+                return response()->json([
+                    'success' => false,
+                    'error' => [
+                        'code' => 'INVALID_OPERATION',
+                        'message' => 'Seuls les comptes actifs peuvent être supprimés',
+                        'details' => [
+                            'compteId' => $compteId,
+                            'statut' => $compte->statut
+                        ]
+                    ]
+                ], 400);
+            }
+
+            // Delete the compte (soft delete with status change)
+            $compte = $this->compteService->deleteCompte($compteId);
 
             Log::info('Compte deleted successfully: ' . $compteId);
             return response()->json([

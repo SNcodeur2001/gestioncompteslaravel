@@ -14,7 +14,7 @@ class CompteResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return [
+        $data = [
             'id' => $this->id,
             'client_id' => $this->client_id,
             'numero' => $this->numero,
@@ -30,5 +30,13 @@ class CompteResource extends JsonResource
                 'version' => 1
             ]
         ];
+
+        // Afficher les dates de blocage seulement pour les comptes épargne
+        if ($this->type === 'epargne') {
+            $data['dateDebutBlocage'] = $this->dateDebutBlocage ? \Carbon\Carbon::parse($this->dateDebutBlocage)->toISOString() : null;
+            $data['dateFinBlocage'] = $this->dateFinBlocage ? \Carbon\Carbon::parse($this->dateFinBlocage)->toISOString() : null;
+        }
+
+        return $data;
     }
 }
