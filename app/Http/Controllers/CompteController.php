@@ -49,13 +49,82 @@ class CompteController extends Controller
      *         required=false,
      *         @OA\Schema(type="string", pattern="^\\+221[0-9]{9}$", example="+221776543210")
      *     ),
+     *     @OA\Parameter(
+     *         name="type",
+     *         in="query",
+     *         description="Filtrer par type de compte. Peut être une valeur unique ou un tableau de valeurs (epargne, cheque, courant)",
+     *         required=false,
+     *         style="form",
+     *         explode=true,
+     *         @OA\Schema(
+     *             type="array",
+     *             @OA\Items(type="string", enum={"epargne", "cheque", "courant"}),
+     *             example={"epargne", "cheque"}
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="statut",
+     *         in="query",
+     *         description="Filtrer par statut du compte",
+     *         required=false,
+     *         @OA\Schema(type="string", enum={"actif", "bloque", "ferme"}, example="actif")
+     *     ),
+     *     @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         description="Rechercher par numéro de compte ou nom du titulaire",
+     *         required=false,
+     *         @OA\Schema(type="string", example="COMP-123456")
+     *     ),
+     *     @OA\Parameter(
+     *         name="sort",
+     *         in="query",
+     *         description="Champ de tri",
+     *         required=false,
+     *         @OA\Schema(type="string", enum={"dateCreation", "solde", "titulaire"}, example="dateCreation")
+     *     ),
+     *     @OA\Parameter(
+     *         name="order",
+     *         in="query",
+     *         description="Ordre de tri",
+     *         required=false,
+     *         @OA\Schema(type="string", enum={"asc", "desc"}, example="desc")
+     *     ),
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Numéro de page",
+     *         required=false,
+     *         @OA\Schema(type="integer", default=1, minimum=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="limit",
+     *         in="query",
+     *         description="Nombre d'éléments par page",
+     *         required=false,
+     *         @OA\Schema(type="integer", default=10, minimum=1, maximum=100)
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Liste des comptes récupérée avec succès",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="success", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Liste des comptes récupérée avec succès"),
-     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Compte"))
+     *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Compte")),
+     *             @OA\Property(property="pagination", type="object",
+     *                 @OA\Property(property="currentPage", type="integer", example=1),
+     *                 @OA\Property(property="totalPages", type="integer", example=10),
+     *                 @OA\Property(property="totalItems", type="integer", example=100),
+     *                 @OA\Property(property="itemsPerPage", type="integer", example=10),
+     *                 @OA\Property(property="hasNext", type="boolean", example=true),
+     *                 @OA\Property(property="hasPrevious", type="boolean", example=false)
+     *             ),
+     *             @OA\Property(property="links", type="object",
+     *                 @OA\Property(property="self", type="string", example="http://localhost:8000/api/v1/ndiaye.mapathe/comptes?page=1"),
+     *                 @OA\Property(property="next", type="string", example="http://localhost:8000/api/v1/ndiaye.mapathe/comptes?page=2"),
+     *                 @OA\Property(property="first", type="string", example="http://localhost:8000/api/v1/ndiaye.mapathe/comptes?page=1"),
+     *                 @OA\Property(property="last", type="string", example="http://localhost:8000/api/v1/ndiaye.mapathe/comptes?page=10")
+     *             )
      *         )
      *     ),
      *     @OA\Response(
@@ -435,28 +504,80 @@ class CompteController extends Controller
      *         @OA\Schema(type="string", format="uuid", example="550e8400-e29b-41d4-a716-446655440000")
      *     ),
      *     @OA\Parameter(
+     *         name="type",
+     *         in="query",
+     *         description="Filtrer par type de compte. Peut être une valeur unique ou un tableau de valeurs (epargne, cheque, courant)",
+     *         required=false,
+     *         style="form",
+     *         explode=true,
+     *         @OA\Schema(
+     *             type="array",
+     *             @OA\Items(type="string", enum={"epargne", "cheque", "courant"}),
+     *             example={"epargne", "cheque"}
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="statut",
+     *         in="query",
+     *         description="Filtrer par statut du compte",
+     *         required=false,
+     *         @OA\Schema(type="string", enum={"actif", "bloque", "ferme"}, example="actif")
+     *     ),
+     *     @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         description="Rechercher par numéro de compte ou nom du titulaire",
+     *         required=false,
+     *         @OA\Schema(type="string", example="COMP-123456")
+     *     ),
+     *     @OA\Parameter(
+     *         name="sort",
+     *         in="query",
+     *         description="Champ de tri",
+     *         required=false,
+     *         @OA\Schema(type="string", enum={"dateCreation", "solde", "titulaire"}, example="dateCreation")
+     *     ),
+     *     @OA\Parameter(
+     *         name="order",
+     *         in="query",
+     *         description="Ordre de tri",
+     *         required=false,
+     *         @OA\Schema(type="string", enum={"asc", "desc"}, example="desc")
+     *     ),
+     *     @OA\Parameter(
      *         name="page",
      *         in="query",
      *         description="Numéro de page",
-     *         @OA\Schema(type="integer", default=1)
+     *         required=false,
+     *         @OA\Schema(type="integer", default=1, minimum=1)
      *     ),
      *     @OA\Parameter(
      *         name="limit",
      *         in="query",
      *         description="Nombre d'éléments par page",
-     *         @OA\Schema(type="integer", default=10, maximum=100)
+     *         required=false,
+     *         @OA\Schema(type="integer", default=10, minimum=1, maximum=100)
      *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Comptes du client récupérés avec succès",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="success", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Comptes du client récupérés avec succès"),
      *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/Compte")),
      *             @OA\Property(property="pagination", type="object",
-     *                 @OA\Property(property="current_page", type="integer"),
-     *                 @OA\Property(property="per_page", type="integer"),
-     *                 @OA\Property(property="total", type="integer")
+     *                 @OA\Property(property="currentPage", type="integer", example=1),
+     *                 @OA\Property(property="totalPages", type="integer", example=5),
+     *                 @OA\Property(property="totalItems", type="integer", example=50),
+     *                 @OA\Property(property="itemsPerPage", type="integer", example=10),
+     *                 @OA\Property(property="hasNext", type="boolean", example=true),
+     *                 @OA\Property(property="hasPrevious", type="boolean", example=false)
+     *             ),
+     *             @OA\Property(property="links", type="object",
+     *                 @OA\Property(property="self", type="string", example="http://localhost:8000/api/v1/ndiaye.mapathe/clients/550e8400-e29b-41d4-a716-446655440000/comptes?page=1"),
+     *                 @OA\Property(property="next", type="string", example="http://localhost:8000/api/v1/ndiaye.mapathe/clients/550e8400-e29b-41d4-a716-446655440000/comptes?page=2"),
+     *                 @OA\Property(property="first", type="string", example="http://localhost:8000/api/v1/ndiaye.mapathe/clients/550e8400-e29b-41d4-a716-446655440000/comptes?page=1"),
+     *                 @OA\Property(property="last", type="string", example="http://localhost:8000/api/v1/ndiaye.mapathe/clients/550e8400-e29b-41d4-a716-446655440000/comptes?page=5")
      *             )
      *         )
      *     ),

@@ -230,9 +230,13 @@ class CompteService
      */
     private function applyFilters($query, array $filters): void
     {
-        // Type filter
-        if (!empty($filters['type']) && in_array($filters['type'], ['epargne', 'cheque', 'courant'])) {
-            $query->where('type', $filters['type']);
+        // Type filter - support single value or array
+        if (!empty($filters['type'])) {
+            $types = is_array($filters['type']) ? $filters['type'] : [$filters['type']];
+            $validTypes = array_intersect($types, ['epargne', 'cheque', 'courant']);
+            if (!empty($validTypes)) {
+                $query->whereIn('type', $validTypes);
+            }
         }
 
         // Status filter

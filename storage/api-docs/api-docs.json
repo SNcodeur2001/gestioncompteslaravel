@@ -196,6 +196,106 @@
                             "pattern": "^\\\\+221[0-9]{9}$",
                             "example": "+221776543210"
                         }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "Filtrer par type de compte. Peut être une valeur unique ou un tableau de valeurs (epargne, cheque, courant)",
+                        "required": false,
+                        "style": "form",
+                        "explode": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "epargne",
+                                    "cheque",
+                                    "courant"
+                                ]
+                            },
+                            "example": [
+                                "epargne",
+                                "cheque"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "statut",
+                        "in": "query",
+                        "description": "Filtrer par statut du compte",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "actif",
+                                "bloque",
+                                "ferme"
+                            ],
+                            "example": "actif"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Rechercher par numéro de compte ou nom du titulaire",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "COMP-123456"
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Champ de tri",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "dateCreation",
+                                "solde",
+                                "titulaire"
+                            ],
+                            "example": "dateCreation"
+                        }
+                    },
+                    {
+                        "name": "order",
+                        "in": "query",
+                        "description": "Ordre de tri",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ],
+                            "example": "desc"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Numéro de page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "Nombre d'éléments par page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10,
+                            "maximum": 100,
+                            "minimum": 1
+                        }
                     }
                 ],
                 "responses": {
@@ -205,9 +305,9 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "success"
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
                                         },
                                         "message": {
                                             "type": "string",
@@ -218,6 +318,56 @@
                                             "items": {
                                                 "$ref": "#/components/schemas/Compte"
                                             }
+                                        },
+                                        "pagination": {
+                                            "properties": {
+                                                "currentPage": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "totalPages": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "totalItems": {
+                                                    "type": "integer",
+                                                    "example": 100
+                                                },
+                                                "itemsPerPage": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "hasNext": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "hasPrevious": {
+                                                    "type": "boolean",
+                                                    "example": false
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "links": {
+                                            "properties": {
+                                                "self": {
+                                                    "type": "string",
+                                                    "example": "http://localhost:8000/api/v1/ndiaye.mapathe/comptes?page=1"
+                                                },
+                                                "next": {
+                                                    "type": "string",
+                                                    "example": "http://localhost:8000/api/v1/ndiaye.mapathe/comptes?page=2"
+                                                },
+                                                "first": {
+                                                    "type": "string",
+                                                    "example": "http://localhost:8000/api/v1/ndiaye.mapathe/comptes?page=1"
+                                                },
+                                                "last": {
+                                                    "type": "string",
+                                                    "example": "http://localhost:8000/api/v1/ndiaye.mapathe/comptes?page=10"
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -814,22 +964,103 @@
                         }
                     },
                     {
+                        "name": "type",
+                        "in": "query",
+                        "description": "Filtrer par type de compte. Peut être une valeur unique ou un tableau de valeurs (epargne, cheque, courant)",
+                        "required": false,
+                        "style": "form",
+                        "explode": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "epargne",
+                                    "cheque",
+                                    "courant"
+                                ]
+                            },
+                            "example": [
+                                "epargne",
+                                "cheque"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "statut",
+                        "in": "query",
+                        "description": "Filtrer par statut du compte",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "actif",
+                                "bloque",
+                                "ferme"
+                            ],
+                            "example": "actif"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Rechercher par numéro de compte ou nom du titulaire",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "COMP-123456"
+                        }
+                    },
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Champ de tri",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "dateCreation",
+                                "solde",
+                                "titulaire"
+                            ],
+                            "example": "dateCreation"
+                        }
+                    },
+                    {
+                        "name": "order",
+                        "in": "query",
+                        "description": "Ordre de tri",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ],
+                            "example": "desc"
+                        }
+                    },
+                    {
                         "name": "page",
                         "in": "query",
                         "description": "Numéro de page",
+                        "required": false,
                         "schema": {
                             "type": "integer",
-                            "default": 1
+                            "default": 1,
+                            "minimum": 1
                         }
                     },
                     {
                         "name": "limit",
                         "in": "query",
                         "description": "Nombre d'éléments par page",
+                        "required": false,
                         "schema": {
                             "type": "integer",
                             "default": 10,
-                            "maximum": 100
+                            "maximum": 100,
+                            "minimum": 1
                         }
                     }
                 ],
@@ -840,9 +1071,9 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "success"
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
                                         },
                                         "message": {
                                             "type": "string",
@@ -856,14 +1087,50 @@
                                         },
                                         "pagination": {
                                             "properties": {
-                                                "current_page": {
-                                                    "type": "integer"
+                                                "currentPage": {
+                                                    "type": "integer",
+                                                    "example": 1
                                                 },
-                                                "per_page": {
-                                                    "type": "integer"
+                                                "totalPages": {
+                                                    "type": "integer",
+                                                    "example": 5
                                                 },
-                                                "total": {
-                                                    "type": "integer"
+                                                "totalItems": {
+                                                    "type": "integer",
+                                                    "example": 50
+                                                },
+                                                "itemsPerPage": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "hasNext": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "hasPrevious": {
+                                                    "type": "boolean",
+                                                    "example": false
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "links": {
+                                            "properties": {
+                                                "self": {
+                                                    "type": "string",
+                                                    "example": "http://localhost:8000/api/v1/ndiaye.mapathe/clients/550e8400-e29b-41d4-a716-446655440000/comptes?page=1"
+                                                },
+                                                "next": {
+                                                    "type": "string",
+                                                    "example": "http://localhost:8000/api/v1/ndiaye.mapathe/clients/550e8400-e29b-41d4-a716-446655440000/comptes?page=2"
+                                                },
+                                                "first": {
+                                                    "type": "string",
+                                                    "example": "http://localhost:8000/api/v1/ndiaye.mapathe/clients/550e8400-e29b-41d4-a716-446655440000/comptes?page=1"
+                                                },
+                                                "last": {
+                                                    "type": "string",
+                                                    "example": "http://localhost:8000/api/v1/ndiaye.mapathe/clients/550e8400-e29b-41d4-a716-446655440000/comptes?page=5"
                                                 }
                                             },
                                             "type": "object"
