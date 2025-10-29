@@ -2,7 +2,7 @@
     "openapi": "3.0.0",
     "info": {
         "title": "API Bancaire - Gestion des Comptes",
-        "description": "Documentation de l'API de Gestion des Comptes",
+        "description": "Documentation complète de l'API de Gestion des Comptes avec exemples de test. Utilisez les credentials suivants pour tester : Admin (admin@gestioncomptes.com / password) ou Client (client@gestioncomptes.com / password)",
         "contact": {
             "email": "contact@gestioncomptes.com"
         },
@@ -11,10 +11,10 @@
     "servers": [
         {
             "url": "https://gestioncompteslaravel.onrender.com",
-            "description": "API Server"
+            "description": "Production Server"
         },
         {
-            "url": "http://localhost:8000",
+            "url": "http://localhost:8000/api/v1/ndiaye.mapathe",
             "description": "Local Development"
         },
         {
@@ -22,6 +22,304 @@
         }
     ],
     "paths": {
+        "/auth/login": {
+            "post": {
+                "tags": [
+                    "Authentification"
+                ],
+                "summary": "Connexion utilisateur",
+                "description": "Authentifier un utilisateur et retourner un token d'accès JWT",
+                "operationId": "login",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "description": "Email de l'utilisateur",
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "admin@gestioncomptes.com"
+                                    },
+                                    "password": {
+                                        "description": "Mot de passe de l'utilisateur",
+                                        "type": "string",
+                                        "example": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Connexion réussie",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Connexion réussie"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "user": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "example": "Admin User"
+                                                        },
+                                                        "email": {
+                                                            "type": "string",
+                                                            "example": "admin@gestioncomptes.com"
+                                                        },
+                                                        "role": {
+                                                            "type": "string",
+                                                            "example": "admin"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                },
+                                                "access_token": {
+                                                    "type": "string",
+                                                    "example": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..."
+                                                },
+                                                "refresh_token": {
+                                                    "type": "string",
+                                                    "example": "token_id_here"
+                                                },
+                                                "token_type": {
+                                                    "type": "string",
+                                                    "example": "Bearer"
+                                                },
+                                                "expires_in": {
+                                                    "type": "integer",
+                                                    "example": 604800
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Identifiants invalides",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "error": {
+                                            "properties": {
+                                                "code": {
+                                                    "type": "string",
+                                                    "example": "INVALID_CREDENTIALS"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Email ou mot de passe incorrect"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ndiaye.mapathe/auth/refresh": {
+            "post": {
+                "tags": [
+                    "Authentification"
+                ],
+                "summary": "Rafraîchir le token d'accès",
+                "description": "Utiliser un refresh token pour obtenir un nouveau token d'accès",
+                "operationId": "refreshToken",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "refresh_token"
+                                ],
+                                "properties": {
+                                    "refresh_token": {
+                                        "description": "Le refresh token obtenu lors de la connexion",
+                                        "type": "string",
+                                        "example": "refresh_token_from_login_response"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Token rafraîchi avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Token rafraîchi avec succès"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "access_token": {
+                                                    "type": "string",
+                                                    "example": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..."
+                                                },
+                                                "token_type": {
+                                                    "type": "string",
+                                                    "example": "Bearer"
+                                                },
+                                                "expires_in": {
+                                                    "type": "integer",
+                                                    "example": 604800
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Refresh token invalide ou expiré",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "error": {
+                                            "properties": {
+                                                "code": {
+                                                    "type": "string",
+                                                    "example": "INVALID_REFRESH_TOKEN"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Token de rafraîchissement invalide ou expiré"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ndiaye.mapathe/auth/logout": {
+            "post": {
+                "tags": [
+                    "Authentification"
+                ],
+                "summary": "Déconnexion utilisateur",
+                "description": "Révoquer tous les tokens de l'utilisateur connecté",
+                "operationId": "logout",
+                "responses": {
+                    "200": {
+                        "description": "Déconnexion réussie",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Déconnexion réussie"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": []
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token invalide ou manquant",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "error": {
+                                            "properties": {
+                                                "code": {
+                                                    "type": "string",
+                                                    "example": "UNAUTHORIZED"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Non autorisé"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v1/comptes/archives": {
             "get": {
                 "tags": [
@@ -163,7 +461,7 @@
                 ]
             }
         },
-        "/api/v1/ndiaye.mapathe/comptes": {
+        "/comptes": {
             "get": {
                 "tags": [
                     "Comptes"
@@ -173,28 +471,13 @@
                 "operationId": "listComptes",
                 "parameters": [
                     {
-                        "name": "X-Role",
+                        "name": "Authorization",
                         "in": "header",
-                        "description": "Rôle de l'utilisateur (admin/client)",
+                        "description": "Token d'authentification Bearer",
                         "required": true,
                         "schema": {
                             "type": "string",
-                            "enum": [
-                                "admin",
-                                "client"
-                            ],
-                            "example": "admin"
-                        }
-                    },
-                    {
-                        "name": "X-Telephone",
-                        "in": "header",
-                        "description": "Numéro de téléphone du client (requis pour le rôle client)",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "pattern": "^\\\\+221[0-9]{9}$",
-                            "example": "+221776543210"
+                            "example": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..."
                         }
                     },
                     {
@@ -576,7 +859,7 @@
                 ]
             }
         },
-        "/api/v1/ndiaye.mapathe/comptes/{compteId}": {
+        "/comptes/{compteId}": {
             "get": {
                 "tags": [
                     "Comptes"
@@ -586,28 +869,13 @@
                 "operationId": "getCompte",
                 "parameters": [
                     {
-                        "name": "X-Role",
+                        "name": "Authorization",
                         "in": "header",
-                        "description": "Rôle de l'utilisateur (admin/client)",
+                        "description": "Token d'authentification Bearer",
                         "required": true,
                         "schema": {
                             "type": "string",
-                            "enum": [
-                                "admin",
-                                "client"
-                            ],
-                            "example": "admin"
-                        }
-                    },
-                    {
-                        "name": "X-Telephone",
-                        "in": "header",
-                        "description": "Numéro de téléphone du client (requis pour le rôle client)",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "pattern": "^\\\\+221[0-9]{9}$",
-                            "example": "+221776543210"
+                            "example": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..."
                         }
                     },
                     {
@@ -943,7 +1211,7 @@
                 ]
             }
         },
-        "/api/v1/ndiaye.mapathe/clients/{client}/comptes": {
+        "/clients/{client}/comptes": {
             "get": {
                 "tags": [
                     "Comptes"
@@ -1152,7 +1420,7 @@
                 ]
             }
         },
-        "/api/v1/ndiaye.mapathe/clients/{client}/comptes/{compte}": {
+        "/clients/{client}/comptes/{compte}": {
             "get": {
                 "tags": [
                     "Comptes"
@@ -1218,7 +1486,7 @@
                 ]
             }
         },
-        "/api/v1/ndiaye.mapathe/comptes/{compteId}/bloquer": {
+        "/comptes/{compteId}/bloquer": {
             "post": {
                 "tags": [
                     "Comptes"
@@ -1362,7 +1630,7 @@
                 ]
             }
         },
-        "/api/v1/ndiaye.mapathe/comptes/{compteId}/debloquer": {
+        "/comptes/{compteId}/debloquer": {
             "post": {
                 "tags": [
                     "Comptes"
@@ -1568,6 +1836,139 @@
                     }
                 },
                 "type": "object"
+            },
+            "LoginRequest": {
+                "title": "Login Request",
+                "description": "Requête de connexion",
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "admin@gestioncomptes.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "example": "password"
+                    }
+                },
+                "type": "object"
+            },
+            "RefreshTokenRequest": {
+                "title": "Refresh Token Request",
+                "description": "Requête de rafraîchissement de token",
+                "properties": {
+                    "refresh_token": {
+                        "type": "string",
+                        "example": "refresh_token_from_login_response"
+                    }
+                },
+                "type": "object"
+            },
+            "CreateCompteRequest": {
+                "title": "Create Compte Request",
+                "description": "Requête de création de compte",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "epargne",
+                            "cheque",
+                            "courant"
+                        ],
+                        "example": "cheque"
+                    },
+                    "soldeInitial": {
+                        "type": "number",
+                        "example": 50000
+                    },
+                    "solde": {
+                        "type": "number",
+                        "example": 50000
+                    },
+                    "devise": {
+                        "type": "string",
+                        "enum": [
+                            "XOF",
+                            "FCFA",
+                            "USD",
+                            "EUR"
+                        ],
+                        "example": "XOF"
+                    },
+                    "client": {
+                        "properties": {
+                            "titulaire": {
+                                "type": "string",
+                                "example": "John Doe"
+                            },
+                            "nci": {
+                                "type": "string",
+                                "example": "1234567890123"
+                            },
+                            "email": {
+                                "type": "string",
+                                "format": "email",
+                                "example": "john@example.com"
+                            },
+                            "telephone": {
+                                "type": "string",
+                                "example": "+221771234567"
+                            },
+                            "adresse": {
+                                "type": "string",
+                                "example": "123 Rue Test, Dakar"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "UpdateCompteRequest": {
+                "title": "Update Compte Request",
+                "description": "Requête de mise à jour des informations client du compte",
+                "properties": {
+                    "titulaire": {
+                        "type": "string",
+                        "example": "John Doe Updated"
+                    },
+                    "informationsClient": {
+                        "properties": {
+                            "telephone": {
+                                "type": "string",
+                                "example": "+221771234568"
+                            },
+                            "email": {
+                                "type": "string",
+                                "format": "email",
+                                "example": "john.updated@example.com"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "BloquerCompteRequest": {
+                "title": "Bloquer Compte Request",
+                "description": "Requête de blocage de compte",
+                "properties": {
+                    "motifBlocage": {
+                        "type": "string",
+                        "example": "Suspicion de fraude"
+                    },
+                    "dateDebutBlocage": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-10-30"
+                    },
+                    "dateFinBlocage": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-11-30"
+                    }
+                },
+                "type": "object"
             }
         },
         "securitySchemes": {
@@ -1579,6 +1980,10 @@
         }
     },
     "tags": [
+        {
+            "name": "Authentification",
+            "description": "Authentification"
+        },
         {
             "name": "Comptes Archivés",
             "description": "Comptes Archivés"

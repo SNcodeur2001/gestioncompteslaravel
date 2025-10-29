@@ -21,31 +21,52 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 // Health check route (sans middleware pour les tests)
+/**
+ * @OA\Get(
+ *     path="/api/health",
+ *     summary="Vérification de santé de l'API",
+ *     description="Endpoint de vérification de santé pour les tests et monitoring",
+ *     operationId="healthCheck",
+ *     tags={"Santé"},
+ *     @OA\Response(
+ *         response=200,
+ *         description="API opérationnelle",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="status", type="string", example="ok")
+ *         )
+ *     )
+ * )
+ */
 Route::get('/health', function() {
     return response()->json(['status' => 'ok']);
 });
 
+// Authentication routes
+Route::prefix('auth')->group(function () {
+    Route::post('login', [App\Http\Controllers\AuthController::class, 'login']);
+    Route::post('refresh', [App\Http\Controllers\AuthController::class, 'refresh']);
+    Route::middleware('auth:api')->post('logout', [App\Http\Controllers\AuthController::class, 'logout']);
+});
+
 // API routes (prefix v1/ndiaye.mapathe already applied in RouteServiceProvider)
-Route::middleware(['fake.auth', 'rating', 'logging'])->group(function () {
+Route::middleware(['auth:api', 'logging'])->group(function () {
     /**
      * Lister tous les comptes
-     * Admin peut récupérer la liste de tous les comptes
-     * Client peut récupérer la liste de ses comptes
+     * Utilisateur authentifié peut récupérer la liste de tous les comptes
      * Liste compte non supprimés type cheque ou compte Epargne Actif
      */
     Route::get('comptes', [CompteController::class, 'index'])->name('comptes.index');
 
     /**
      * Récupérer un compte spécifique par ID
-     * Admin peut récupérer n'importe quel compte
-     * Client peut récupérer un de ses comptes
+     * Utilisateur authentifié peut récupérer n'importe quel compte
      * Recherche locale par défaut, puis serverless si non trouvé
      */
     Route::get('comptes/{compteId}', [CompteController::class, 'show'])->name('comptes.show');
 
     /**
      * Mettre à jour les informations du client d'un compte
-     * Admin peut modifier n'importe quel compte
+     * Utilisateur authentifié peut modifier n'importe quel compte
      * Tous les champs sont optionnels mais au moins un doit être fourni
      */
     Route::patch('comptes/{compteId}', [CompteController::class, 'update'])->name('comptes.update');
@@ -57,20 +78,20 @@ Route::middleware(['fake.auth', 'rating', 'logging'])->group(function () {
 
     /**
      * Supprimer un compte (soft delete)
-     * Admin peut supprimer n'importe quel compte
+     * Utilisateur authentifié peut supprimer n'importe quel compte
      * Le compte passe au statut 'ferme' avec dateFermeture
      */
     Route::delete('comptes/{compteId}', [CompteController::class, 'destroy'])->name('comptes.destroy');
 });
 
-// Client-specific routes
-Route::middleware(['fake.auth', 'rating'])->group(function () {
+// Client-specific routes (Authenticated users can access their own accounts)
+Route::middleware(['auth:api', 'logging'])->group(function () {
     Route::get('clients/{client}/comptes', [CompteController::class, 'clientComptes']);
     Route::get('clients/{client}/comptes/{compte}', [CompteController::class, 'clientCompte']);
 });
 
 // Archived comptes routes
-Route::middleware(['fake.auth', 'rating'])->group(function () {
+Route::middleware(['auth:api', 'logging'])->group(function () {
     /**
      * Lister tous les comptes archivés
      * La consultation de compte Epargne archiver se fait a partir du cloud
@@ -79,7 +100,7 @@ Route::middleware(['fake.auth', 'rating'])->group(function () {
 });
 
 // Account blocking/unblocking routes
-Route::middleware(['fake.auth', 'rating'])->group(function () {
+Route::middleware(['auth:api', 'logging'])->group(function () {
     /**
      * Bloquer un compte
      * Prépare le compte pour archivage automatique

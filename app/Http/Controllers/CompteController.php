@@ -13,6 +13,7 @@ use App\Services\CompteService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 
@@ -29,25 +30,18 @@ class CompteController extends Controller
     }
     /**
      * @OA\Get(
-     *     path="/api/v1/ndiaye.mapathe/comptes",
+     *     path="/comptes",
      *     summary="Liste tous les comptes",
      *     description="Admin peut récupérer la liste de tous les comptes. Client peut récupérer la liste de ses comptes.",
      *     operationId="listComptes",
      *     tags={"Comptes"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
-     *         name="X-Role",
+     *         name="Authorization",
      *         in="header",
-     *         description="Rôle de l'utilisateur (admin/client)",
+     *         description="Token d'authentification Bearer",
      *         required=true,
-     *         @OA\Schema(type="string", enum={"admin", "client"}, example="admin")
-     *     ),
-     *     @OA\Parameter(
-     *         name="X-Telephone",
-     *         in="header",
-     *         description="Numéro de téléphone du client (requis pour le rôle client)",
-     *         required=false,
-     *         @OA\Schema(type="string", pattern="^\\+221[0-9]{9}$", example="+221776543210")
+     *         @OA\Schema(type="string", example="Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9...")
      *     ),
      *     @OA\Parameter(
      *         name="type",
@@ -136,14 +130,11 @@ class CompteController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $role = $request->header('X-Role');
-            Log::info('Current role: ' . $role); // Pour déboguer
-
-            $user = $request->attributes->get('user');
+            $user = Auth::guard('api')->user();
 
             // Si l'utilisateur est un client, filtrer par ses comptes
             if ($user->role === 'client') {
-                $comptes = $this->compteService->getComptesByTelephone($user->telephone, $request->all());
+                $comptes = $this->compteService->getComptesByTelephone($user->client->telephone, $request->all());
             } else {
                 // Admin peut voir tous les comptes
                 $comptes = $this->compteService->getAllComptes($request->all());
@@ -182,7 +173,7 @@ class CompteController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/v1/ndiaye.mapathe/comptes",
+     *     path="/comptes",
      *     summary="Créer un nouveau compte",
      *     description="Créer un nouveau compte bancaire pour un client existant ou nouveau",
      *     operationId="createCompte",
@@ -276,25 +267,18 @@ class CompteController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/ndiaye.mapathe/comptes/{compteId}",
+     *     path="/comptes/{compteId}",
      *     summary="Récupérer un compte spécifique",
      *     description="Admin peut récupérer n'importe quel compte. Client peut récupérer un de ses comptes. Recherche locale par défaut, puis serverless si non trouvé.",
      *     operationId="getCompte",
      *     tags={"Comptes"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
-     *         name="X-Role",
+     *         name="Authorization",
      *         in="header",
-     *         description="Rôle de l'utilisateur (admin/client)",
+     *         description="Token d'authentification Bearer",
      *         required=true,
-     *         @OA\Schema(type="string", enum={"admin", "client"}, example="admin")
-     *     ),
-     *     @OA\Parameter(
-     *         name="X-Telephone",
-     *         in="header",
-     *         description="Numéro de téléphone du client (requis pour le rôle client)",
-     *         required=false,
-     *         @OA\Schema(type="string", pattern="^\\+221[0-9]{9}$", example="+221776543210")
+     *         @OA\Schema(type="string", example="Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9...")
      *     ),
      *     @OA\Parameter(
      *         name="compteId",
@@ -330,8 +314,7 @@ class CompteController extends Controller
     public function show(Request $request, string $compteId): JsonResponse
     {
         try {
-            $role = $request->header('X-Role');
-            $user = $request->attributes->get('user');
+            $user = Auth::guard('api')->user();
 
             // Recherche du compte avec stratégie locale/serverless
             $compte = $this->compteService->findCompte($compteId);
@@ -388,7 +371,7 @@ class CompteController extends Controller
 
     /**
      * @OA\Patch(
-     *     path="/api/v1/ndiaye.mapathe/comptes/{compteId}",
+     *     path="/comptes/{compteId}",
      *     summary="Mettre à jour les informations du client d'un compte",
      *     description="Admin peut modifier les informations client de n'importe quel compte. Tous les champs sont optionnels mais au moins un doit être fourni.",
      *     operationId="updateCompteClient",
@@ -490,7 +473,7 @@ class CompteController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/ndiaye.mapathe/clients/{client}/comptes",
+     *     path="/clients/{client}/comptes",
      *     summary="Récupérer les comptes d'un client",
      *     description="Récupérer tous les comptes associés à un client spécifique",
      *     operationId="getClientComptes",
@@ -620,7 +603,7 @@ class CompteController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/v1/ndiaye.mapathe/clients/{client}/comptes/{compte}",
+     *     path="/clients/{client}/comptes/{compte}",
      *     summary="Récupérer un compte spécifique d'un client",
      *     description="Récupérer les détails d'un compte spécifique appartenant à un client",
      *     operationId="getClientCompte",
@@ -670,7 +653,7 @@ class CompteController extends Controller
 
     /**
      * @OA\Delete(
-     *     path="/api/v1/ndiaye.mapathe/comptes/{compteId}",
+     *     path="/comptes/{compteId}",
      *     summary="Supprimer un compte (soft delete)",
      *     description="Admin peut supprimer n'importe quel compte. Le compte passe au statut 'ferme' avec dateFermeture et fait l'objet d'un soft delete.",
      *     operationId="deleteCompte",
@@ -763,7 +746,7 @@ class CompteController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/v1/ndiaye.mapathe/comptes/{compteId}/bloquer",
+     *     path="/comptes/{compteId}/bloquer",
      *     summary="Bloquer un compte",
      *     description="Admin peut bloquer un compte en spécifiant un motif et les dates de blocage. Le compte sera automatiquement archivé à la date de début de blocage.",
      *     operationId="bloquerCompte",
@@ -861,7 +844,7 @@ class CompteController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/v1/ndiaye.mapathe/comptes/{compteId}/debloquer",
+     *     path="/comptes/{compteId}/debloquer",
      *     summary="Débloquer un compte",
      *     description="Admin peut débloquer un compte bloqué, ce qui le remet en statut actif et annule l'archivage automatique.",
      *     operationId="debloquerCompte",

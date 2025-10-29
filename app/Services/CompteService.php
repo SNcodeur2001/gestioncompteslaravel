@@ -44,7 +44,9 @@ class CompteService
      */
     public function getComptesByTelephone(string $telephone, array $filters = []): LengthAwarePaginator
     {
-        $query = Compte::client($telephone)->actifs();
+        $query = Compte::whereHas('client', function ($q) use ($telephone) {
+            $q->where('telephone', $telephone);
+        })->actifs();
 
         // Apply filters
         $this->applyFilters($query, $filters);

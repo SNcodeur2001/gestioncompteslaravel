@@ -82,11 +82,11 @@ return [
         'ui' => [
             'display' => [
                 'dark_mode' => env('L5_SWAGGER_UI_DARK_MODE', false),
-                'doc_expansion' => env('L5_SWAGGER_UI_DOC_EXPANSION', 'none'),
+                'doc_expansion' => env('L5_SWAGGER_UI_DOC_EXPANSION', 'list'),
                 'filter' => env('L5_SWAGGER_UI_FILTER', true),
             ],
             'authorization' => [
-                'persist_authorization' => env('L5_SWAGGER_UI_PERSIST_AUTHORIZATION', false),
+                'persist_authorization' => env('L5_SWAGGER_UI_PERSIST_AUTHORIZATION', true),
                 'oauth2' => [
                     'use_pkce_with_authorization_code_grant' => false,
                 ],
