@@ -27,3 +27,6 @@
 - [ ] Documenter les routes (Swagger/OpenAPI)
 - [ ] Tester les exceptions personnalisées
 - [ ] Vérifier la configuration CORS
+
+
+à la creation de compte on le donne un code et un mail lors de l'authentification quand on crée un compte si c'est un nouveau utilisateur on lui donne le login et le mot de passe puis on lui demande le code pour activer le compte (première authentification)

@@ -80,10 +80,31 @@ class CompteController extends Controller
                 $comptes = $this->compteService->getAllComptes($request->all());
             }
 
-            return $this->paginatedResponse(
-                $comptes,
-                'Liste des comptes récupérée avec succès'
-            );
+            // Transform items using CompteResource
+            $comptesData = CompteResource::collection($comptes->items());
+            $pagination = [
+                'currentPage' => $comptes->currentPage(),
+                'totalPages' => $comptes->lastPage(),
+                'totalItems' => $comptes->total(),
+                'itemsPerPage' => $comptes->perPage(),
+                'hasNext' => $comptes->hasMorePages(),
+                'hasPrevious' => $comptes->currentPage() > 1,
+            ];
+            $links = [
+                'self' => request()->fullUrl(),
+                'next' => $comptes->nextPageUrl(),
+                'first' => $comptes->url(1),
+                'last' => $comptes->url($comptes->lastPage()),
+            ];
+            $links = array_filter($links, fn($link) => $link !== null);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Liste des comptes récupérée avec succès',
+                'data' => $comptesData,
+                'pagination' => $pagination,
+                'links' => $links,
+            ], 200);
         } catch (\Exception $e) {
             Log::error('Error in CompteController@index: ' . $e->getMessage());
             return $this->errorResponse($e->getMessage());
@@ -449,10 +470,31 @@ class CompteController extends Controller
     {
         $comptes = $this->compteService->getComptesByClient($client, $request->all());
 
-        return $this->paginatedResponse(
-            $comptes,
-            'Comptes du client récupérés avec succès'
-        );
+        // Transform items using CompteResource
+        $comptesData = CompteResource::collection($comptes->items());
+        $pagination = [
+            'currentPage' => $comptes->currentPage(),
+            'totalPages' => $comptes->lastPage(),
+            'totalItems' => $comptes->total(),
+            'itemsPerPage' => $comptes->perPage(),
+            'hasNext' => $comptes->hasMorePages(),
+            'hasPrevious' => $comptes->currentPage() > 1,
+        ];
+        $links = [
+            'self' => request()->fullUrl(),
+            'next' => $comptes->nextPageUrl(),
+            'first' => $comptes->url(1),
+            'last' => $comptes->url($comptes->lastPage()),
+        ];
+        $links = array_filter($links, fn($link) => $link !== null);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Comptes du client récupérés avec succès',
+            'data' => $comptesData,
+            'pagination' => $pagination,
+            'links' => $links,
+        ], 200);
     }
 
     /**

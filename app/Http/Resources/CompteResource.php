@@ -16,6 +16,7 @@ class CompteResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'client_id' => $this->client_id,
             'numero' => $this->numero,
             'titulaire' => $this->client?->titulaire,
             'type' => $this->type,
@@ -27,15 +28,7 @@ class CompteResource extends JsonResource
             'metadata' => [
                 'derniereModification' => $this->updated_at?->toISOString(),
                 'version' => 1
-            ],
-            'client' => $this->whenLoaded('client', function () {
-                return [
-                    'id' => $this->client->id,
-                    'titulaire' => $this->client->titulaire,
-                    'email' => $this->client->email,
-                    'telephone' => $this->client->telephone,
-                ];
-            }),
+            ]
         ];
     }
 }

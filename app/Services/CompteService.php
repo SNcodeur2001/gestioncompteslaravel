@@ -23,7 +23,7 @@ class CompteService
      */
     public function getComptesByClient(Client $client, array $filters = []): LengthAwarePaginator
     {
-        $query = Compte::with('client')->where('client_id', $client->id);
+        $query = Compte::where('client_id', $client->id);
 
         // Apply filters
         $this->applyFilters($query, $filters);
@@ -44,7 +44,7 @@ class CompteService
      */
     public function getComptesByTelephone(string $telephone, array $filters = []): LengthAwarePaginator
     {
-        $query = Compte::with('client')->client($telephone)->actifs();
+        $query = Compte::client($telephone)->actifs();
 
         // Apply filters
         $this->applyFilters($query, $filters);
@@ -65,7 +65,7 @@ class CompteService
      */
     public function getAllComptes(array $filters = []): LengthAwarePaginator
     {
-        $query = Compte::with('client');
+        $query = Compte::query();
 
         // Apply filters
         $this->applyFilters($query, $filters);
@@ -86,7 +86,7 @@ class CompteService
     public function findCompte(string $id): ?Compte
     {
         // 1. Chercher d'abord en local
-        $compte = Compte::with('client')->find($id);
+        $compte = Compte::find($id);
 
         if ($compte) {
             return $compte;
@@ -124,8 +124,7 @@ class CompteService
      */
     public function findCompteByClient(Client $client, string $compteId): ?Compte
     {
-        return Compte::with('client')
-                    ->where('client_id', $client->id)
+        return Compte::where('client_id', $client->id)
                     ->find($compteId);
     }
 
@@ -182,6 +181,9 @@ class CompteService
         if (!$compte) {
             return null;
         }
+
+        // Load client relationship for updates
+        $compte->load('client');
 
         // Update client information if provided
         if (isset($data['informationsClient'])) {
@@ -280,7 +282,7 @@ class CompteService
     {
         try {
             // Find the compte (without global scope to allow finding soft-deleted comptes)
-            $compte = Compte::with('client')->withoutGlobalScope('nonSupprimes')->find($compteId);
+            $compte = Compte::withoutGlobalScope('nonSupprimes')->find($compteId);
 
             if (!$compte) {
                 return null;
@@ -307,8 +309,7 @@ class CompteService
      */
     public function getArchivedComptes(array $filters = []): LengthAwarePaginator
     {
-        $query = Compte::with('client')
-            ->withoutGlobalScope('nonSupprimes')
+        $query = Compte::withoutGlobalScope('nonSupprimes')
             ->where('archived', true)
             ->whereNull('deleted_at');
 
@@ -332,7 +333,7 @@ class CompteService
     {
         try {
             // Find the compte
-            $compte = Compte::with('client')->find($compteId);
+            $compte = Compte::find($compteId);
 
             if (!$compte) {
                 return null;
@@ -351,7 +352,7 @@ class CompteService
                 'dateFinBlocage' => $data['dateFinBlocage'],
             ]);
 
-            return $compte->fresh(['client']);
+            return $compte->fresh();
         } catch (\Exception $e) {
             Log::error('Error in CompteService::bloquerCompte: ' . $e->getMessage());
             throw $e;
@@ -365,8 +366,7 @@ class CompteService
     {
         try {
             // Find the compte (including archived ones)
-            $compte = Compte::with('client')
-                ->withoutGlobalScope('nonSupprimes')
+            $compte = Compte::withoutGlobalScope('nonSupprimes')
                 ->find($compteId);
 
             if (!$compte) {
@@ -387,7 +387,7 @@ class CompteService
                 'archived' => false, // En cas où il était archivé
             ]);
 
-            return $compte->fresh(['client']);
+            return $compte->fresh();
         } catch (\Exception $e) {
             Log::error('Error in CompteService::debloquerCompte: ' . $e->getMessage());
             throw $e;
