@@ -14,8 +14,17 @@ class ForceHttps
             return $next($request);
         }
 
-        if (!$request->secure() && app()->environment('production')) {
-            return redirect()->secure($request->getRequestUri());
+        // En production, vérifier si la requête vient déjà d'un domaine HTTPS
+        if (app()->environment('production')) {
+            $host = $request->getHost();
+            // Si c'est déjà un domaine HTTPS (render.com), ne pas rediriger
+            if (str_contains($host, 'onrender.com') || $request->secure()) {
+                return $next($request);
+            }
+            // Sinon, rediriger vers HTTPS seulement si nécessaire
+            if (!$request->secure()) {
+                return redirect()->secure($request->getRequestUri());
+            }
         }
 
         return $next($request);
