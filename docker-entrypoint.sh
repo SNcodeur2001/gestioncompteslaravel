@@ -16,7 +16,35 @@ echo "Clearing and caching configuration for production"
 php artisan config:clear
 php artisan cache:clear
 php artisan route:clear
-php artisan view:clear
+php artisan view:clearcurl -X 'POST' \
+  'https://gestioncompteslaravel.onrender.com/api/v1/ndiaye.mapathe/auth/login' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -H 'X-CSRF-TOKEN: ' \
+  -H 'Accept: application/json' \
+  -d '{
+  "email": "admin@gestioncomptes.com",
+  "password": "password"
+}'
+
+Request URL
+
+https://gestioncompteslaravel.onrender.com/api/v1/ndiaye.mapathe/auth/login
+
+Server response
+Code	Details
+500
+Undocumented
+	
+
+Error: response status is 500
+Response body
+
+{
+  "message": "Invalid key supplied",
+  "exception": "LogicException",
+  "file": "/var/www/html/vendor/league/oauth2-server/src/CryptKey.php",
+  "line": 67,
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
