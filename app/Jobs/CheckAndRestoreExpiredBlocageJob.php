@@ -29,8 +29,9 @@ class CheckAndRestoreExpiredBlocageJob implements ShouldQueue
     {
         Log::info('Début de vérification des comptes avec dateFinBlocage échue');
 
-        // Récupérer les comptes bloqués dont la dateFinBlocage est échue
+        // Récupérer les comptes épargne bloqués dont la dateFinBlocage est échue
         $comptesToRestore = Compte::where('statut', 'bloque')
+            ->where('type', 'epargne')
             ->whereNotNull('dateFinBlocage')
             ->where('dateFinBlocage', '<=', now())
             ->where('archived', true)

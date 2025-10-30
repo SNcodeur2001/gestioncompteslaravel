@@ -335,6 +335,7 @@ class CompteService
 
     /**
      * Bloquer un compte (préparation à l'archivage)
+     * Seuls les comptes épargne actifs peuvent être bloqués
      */
     public function bloquerCompte(string $compteId, array $data): ?Compte
     {
@@ -344,6 +345,15 @@ class CompteService
 
             if (!$compte) {
                 return null;
+            }
+
+            // Vérifier que le compte est de type épargne et actif
+            if ($compte->type !== 'epargne') {
+                throw new \Exception('Seuls les comptes épargne peuvent être bloqués.');
+            }
+
+            if ($compte->statut !== 'actif') {
+                throw new \Exception('Seuls les comptes actifs peuvent être bloqués.');
             }
 
             // Vérifier que le compte n'est pas déjà bloqué

@@ -29,8 +29,9 @@ class CheckAndArchiveExpiredBlocageJob implements ShouldQueue
     {
         Log::info('Début de vérification des comptes avec dateDebutBlocage échue');
 
-        // Récupérer les comptes bloqués dont la dateDebutBlocage est échue
+        // Récupérer les comptes épargne bloqués dont la dateDebutBlocage est échue
         $comptesToArchive = Compte::where('statut', 'bloque')
+            ->where('type', 'epargne')
             ->whereNotNull('dateDebutBlocage')
             ->where('dateDebutBlocage', '<=', now())
             ->where('archived', false)
