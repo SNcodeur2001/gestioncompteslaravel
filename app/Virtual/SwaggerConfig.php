@@ -13,7 +13,7 @@ namespace App\Virtual;
  * )
  * @OA\Server(
  *     description="Production Server",
- *     url="https://gestioncompteslaravel.onrender.com"
+ *     url="https://gestioncompteslaravel.onrender.com/api/v1/ndiaye.mapathe"
  * )
  * @OA\Server(
  *     description="Local Development",

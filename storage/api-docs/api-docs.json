@@ -10,7 +10,7 @@
     },
     "servers": [
         {
-            "url": "https://gestioncompteslaravel.onrender.com",
+            "url": "https://gestioncompteslaravel.onrender.com/api/v1/ndiaye.mapathe",
             "description": "Production Server"
         },
         {
