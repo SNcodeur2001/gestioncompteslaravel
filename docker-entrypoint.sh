@@ -12,22 +12,11 @@ php artisan migrate --force
 echo "Fixing storage permissions"
 chmod -R 775 storage
 
-echo "Clearing config cache"
-php artisan config:clear
-
-echo "Waiting briefly before Passport install..."
-sleep 5
-
-echo "Generating Passport keys..."
-php artisan passport:install --force || echo "Passport install failed"
-
-echo "Clearing all caches to ensure fresh config"
+echo "Clearing and caching configuration for production"
 php artisan config:clear
 php artisan cache:clear
 php artisan route:clear
 php artisan view:clear
-
-echo "Caching configuration for production"
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
