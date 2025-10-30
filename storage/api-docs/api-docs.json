@@ -14,7 +14,7 @@
             "description": "Production Server"
         },
         {
-            "url": "http://localhost:8000",
+            "url": "http://localhost:8000/api/v1/ndiaye.mapathe",
             "description": "Local Development"
         },
         {
@@ -22,7 +22,7 @@
         }
     ],
     "paths": {
-        "/api/v1/ndiaye.mapathe/auth/login": {
+        "/auth/login": {
             "post": {
                 "tags": [
                     "Authentification"
@@ -152,7 +152,7 @@
                 }
             }
         },
-        "/api/v1/ndiaye.mapathe/auth/refresh": {
+        "/auth/refresh": {
             "post": {
                 "tags": [
                     "Authentification"
@@ -250,7 +250,7 @@
                 }
             }
         },
-        "/api/v1/ndiaye.mapathe/auth/logout": {
+        "/auth/logout": {
             "post": {
                 "tags": [
                     "Authentification"
@@ -673,7 +673,7 @@
                     "Comptes"
                 ],
                 "summary": "Créer un nouveau compte",
-                "description": "Créer un nouveau compte bancaire pour un client existant ou nouveau",
+                "description": "Créer un compte bancaire pour un client existant ou pour un nouveau client. En cas de nouveau client, un email de bienvenue et un SMS avec un code d'activation seront envoyés automatiquement.",
                 "operationId": "createCompte",
                 "requestBody": {
                     "required": true,
@@ -718,66 +718,36 @@
                                         "example": "XOF"
                                     },
                                     "client": {
-                                        "description": "Informations du client",
-                                        "type": "object",
-                                        "oneOf": [
-                                            {
-                                                "title": "Client existant",
-                                                "properties": {
-                                                    "id": {
-                                                        "description": "ID du client existant",
-                                                        "type": "string",
-                                                        "format": "uuid",
-                                                        "example": "550e8400-e29b-41d4-a716-446655440000"
-                                                    }
-                                                },
-                                                "type": "object"
+                                        "description": "Données du client : utiliser 'id' pour un client existant ou les autres champs pour un nouveau client.",
+                                        "properties": {
+                                            "id": {
+                                                "type": "string",
+                                                "format": "uuid",
+                                                "example": "550e8400-e29b-41d4-a716-446655440000"
                                             },
-                                            {
-                                                "title": "Nouveau client",
-                                                "required": [
-                                                    "titulaire",
-                                                    "nci",
-                                                    "email",
-                                                    "telephone",
-                                                    "adresse"
-                                                ],
-                                                "properties": {
-                                                    "titulaire": {
-                                                        "type": "string",
-                                                        "maxLength": 255,
-                                                        "minLength": 2,
-                                                        "example": "Mamadou Diop"
-                                                    },
-                                                    "nci": {
-                                                        "description": "13 chiffres commençant par 1 ou 2",
-                                                        "type": "string",
-                                                        "maxLength": 13,
-                                                        "minLength": 13,
-                                                        "pattern": "^[12]\\\\d{12}$",
-                                                        "example": "1234567890123"
-                                                    },
-                                                    "email": {
-                                                        "type": "string",
-                                                        "format": "email",
-                                                        "example": "mamadou.diop@email.com"
-                                                    },
-                                                    "telephone": {
-                                                        "description": "Format +221XXXXXXXXX (9 chiffres après +221)",
-                                                        "type": "string",
-                                                        "pattern": "^\\\\+221[0-9]{9}$",
-                                                        "example": "+221776543210"
-                                                    },
-                                                    "adresse": {
-                                                        "type": "string",
-                                                        "maxLength": 500,
-                                                        "minLength": 5,
-                                                        "example": "123 Rue Kermel, Plateau, Dakar"
-                                                    }
-                                                },
-                                                "type": "object"
+                                            "titulaire": {
+                                                "type": "string",
+                                                "example": "Mamadou Diop"
+                                            },
+                                            "nci": {
+                                                "type": "string",
+                                                "example": "1234567890123"
+                                            },
+                                            "email": {
+                                                "type": "string",
+                                                "format": "email",
+                                                "example": "mapathendiaye542@gmail.com"
+                                            },
+                                            "telephone": {
+                                                "type": "string",
+                                                "example": "+221776543210"
+                                            },
+                                            "adresse": {
+                                                "type": "string",
+                                                "example": "123 Rue Kermel, Plateau, Dakar"
                                             }
-                                        ]
+                                        },
+                                        "type": "object"
                                     }
                                 },
                                 "type": "object"
@@ -792,9 +762,9 @@
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "success"
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
                                         },
                                         "message": {
                                             "type": "string",
@@ -817,33 +787,42 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Le client sélectionné n'existe pas. (and 2 more errors)"
+                                            "example": "Le client sélectionné n'existe pas."
                                         },
                                         "errors": {
-                                            "properties": {
-                                                "client.id": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "type": "string",
-                                                        "example": "Le client sélectionné n'existe pas."
-                                                    }
-                                                },
-                                                "client.nci": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "type": "string",
-                                                        "example": "Ce numéro de carte d'identité est déjà utilisé."
-                                                    }
-                                                },
-                                                "client.telephone": {
-                                                    "type": "array",
-                                                    "items": {
-                                                        "type": "string",
-                                                        "example": "Le numéro de téléphone doit être au format +221XXXXXXXXX (9 chiffres après +221)."
-                                                    }
-                                                }
-                                            },
                                             "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Non autorisé – Token invalide ou expiré",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erreur serveur interne",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Erreur interne du serveur."
                                         }
                                     },
                                     "type": "object"

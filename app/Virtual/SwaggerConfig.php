@@ -17,7 +17,7 @@ namespace App\Virtual;
  * )
  * @OA\Server(
  *     description="Local Development",
- *     url="http://localhost:8000"
+ *     url="http://localhost:8000/api/v1/ndiaye.mapathe"
  * )
  * @OA\SecurityScheme(
  *     securityScheme="bearerAuth",

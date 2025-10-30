@@ -18,7 +18,8 @@ class Client extends Model
         'nci',
         'email',
         'telephone',
-        'adresse'
+        'adresse',
+        'is_active'
     ];
 
     // Générer automatiquement UUID à la création

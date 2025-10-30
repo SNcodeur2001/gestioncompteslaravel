@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActivationController;
 use App\Http\Controllers\CompteArchiveController;
 use App\Http\Controllers\CompteController;
 use Illuminate\Http\Request;
@@ -46,6 +47,19 @@ Route::prefix('auth')->group(function () {
     Route::post('login', [App\Http\Controllers\AuthController::class, 'login']);
     Route::post('refresh', [App\Http\Controllers\AuthController::class, 'refresh']);
     Route::middleware('auth:api')->post('logout', [App\Http\Controllers\AuthController::class, 'logout']);
+});
+
+// Activation routes (public routes for new clients)
+Route::prefix('activation')->group(function () {
+    /**
+     * Activer un compte client avec le code OTP
+     */
+    Route::post('activate', [ActivationController::class, 'activate'])->name('activation.activate');
+
+    /**
+     * Renvoyer le code d'activation
+     */
+    Route::post('resend-code', [ActivationController::class, 'resendCode'])->name('activation.resend');
 });
 
 

@@ -13,7 +13,7 @@ class AuthController extends Controller
 {
     /**
      * @OA\Post(
-     *     path="/api/v1/ndiaye.mapathe/auth/login",
+     *     path="/auth/login",
      *     summary="Connexion utilisateur",
      *     description="Authentifier un utilisateur et retourner un token d'accès JWT",
      *     operationId="login",
@@ -112,7 +112,7 @@ class AuthController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/v1/ndiaye.mapathe/auth/refresh",
+     *     path="/auth/refresh",
      *     summary="Rafraîchir le token d'accès",
      *     description="Utiliser un refresh token pour obtenir un nouveau token d'accès",
      *     operationId="refreshToken",
@@ -195,7 +195,7 @@ class AuthController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/v1/ndiaye.mapathe/auth/logout",
+     *     path="/auth/logout",
      *     summary="Déconnexion utilisateur",
      *     description="Révoquer tous les tokens de l'utilisateur connecté",
      *     operationId="logout",
