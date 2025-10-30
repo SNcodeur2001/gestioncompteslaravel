@@ -164,9 +164,10 @@ class CompteService
 
         $compte = Compte::create($compteData);
 
-        // Dispatch event for notifications (only for new clients)
+        // Dispatch jobs for notifications (only for new clients)
         if ($generatedPassword && $generatedCode) {
-            \App\Events\CompteCreated::dispatch($compte, $generatedPassword, $generatedCode);
+            \App\Jobs\SendClientWelcomeMail::dispatch($client, $generatedPassword);
+            \App\Jobs\SendClientActivationCode::dispatch($client, $generatedCode);
         }
 
         return $compte;

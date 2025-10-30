@@ -171,81 +171,74 @@ class CompteController extends Controller
         }
     }
 
-    /**
-     * @OA\Post(
-     *     path="/comptes",
-     *     summary="Créer un nouveau compte",
-     *     description="Créer un nouveau compte bancaire pour un client existant ou nouveau",
-     *     operationId="createCompte",
-     *     tags={"Comptes"},
-     *     security={{"bearerAuth":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"type", "soldeInitial", "solde", "devise", "client"},
-     *             @OA\Property(property="type", type="string", enum={"epargne", "cheque", "courant"}, example="cheque"),
-     *             @OA\Property(property="soldeInitial", type="number", minimum=10000, example=50000),
-     *             @OA\Property(property="solde", type="number", minimum=0, example=50000),
-     *             @OA\Property(property="devise", type="string", enum={"XOF", "FCFA", "USD", "EUR"}, example="XOF"),
-     *             @OA\Property(
-     *                 property="client",
-     *                 type="object",
-     *                 description="Informations du client",
-     *                 oneOf={
-     *                     @OA\Schema(
-     *                         title="Client existant",
-     *                         @OA\Property(property="id", type="string", format="uuid", example="550e8400-e29b-41d4-a716-446655440000", description="ID du client existant")
-     *                     ),
-     *                     @OA\Schema(
-     *                         title="Nouveau client",
-     *                         required={"titulaire", "nci", "email", "telephone", "adresse"},
-     *                         @OA\Property(property="titulaire", type="string", minLength=2, maxLength=255, example="Mamadou Diop"),
-     *                         @OA\Property(property="nci", type="string", minLength=13, maxLength=13, pattern="^[12]\\d{12}$", example="1234567890123", description="13 chiffres commençant par 1 ou 2"),
-     *                         @OA\Property(property="email", type="string", format="email", example="mamadou.diop@email.com"),
-     *                         @OA\Property(property="telephone", type="string", pattern="^\\+221[0-9]{9}$", example="+221776543210", description="Format +221XXXXXXXXX (9 chiffres après +221)"),
-     *                         @OA\Property(property="adresse", type="string", minLength=5, maxLength=500, example="123 Rue Kermel, Plateau, Dakar")
-     *                     )
-     *                 }
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Compte créé avec succès",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(property="message", type="string", example="Compte créé avec succès"),
-     *             @OA\Property(property="data", ref="#/components/schemas/Compte")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Erreur de validation",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Le client sélectionné n'existe pas. (and 2 more errors)"),
-     *             @OA\Property(
-     *                 property="errors",
-     *                 type="object",
-     *                 @OA\Property(
-     *                     property="client.id",
-     *                     type="array",
-     *                     @OA\Items(type="string", example="Le client sélectionné n'existe pas.")
-     *                 ),
-     *                 @OA\Property(
-     *                     property="client.nci",
-     *                     type="array",
-     *                     @OA\Items(type="string", example="Ce numéro de carte d'identité est déjà utilisé.")
-     *                 ),
-     *                 @OA\Property(
-     *                     property="client.telephone",
-     *                     type="array",
-     *                     @OA\Items(type="string", example="Le numéro de téléphone doit être au format +221XXXXXXXXX (9 chiffres après +221).")
-     *                 )
-     *             )
-     *         )
-     *     )
-     * )
-     */
+ /**
+ * @OA\Post(
+ *     path="/comptes",
+ *     summary="Créer un nouveau compte",
+ *     description="Créer un compte bancaire pour un client existant ou pour un nouveau client. En cas de nouveau client, un email de bienvenue et un SMS avec un code d'activation seront envoyés automatiquement.",
+ *     operationId="createCompte",
+ *     tags={"Comptes"},
+ *     security={{"bearerAuth":{}}},
+ *
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             required={"type", "soldeInitial", "solde", "devise", "client"},
+ *             @OA\Property(property="type", type="string", enum={"epargne", "cheque", "courant"}, example="cheque"),
+ *             @OA\Property(property="soldeInitial", type="number", minimum=10000, example=50000),
+ *             @OA\Property(property="solde", type="number", minimum=0, example=50000),
+ *             @OA\Property(property="devise", type="string", enum={"XOF", "FCFA", "USD", "EUR"}, example="XOF"),
+ *             @OA\Property(
+ *                 property="client",
+ *                 type="object",
+ *                 description="Données du client : utiliser 'id' pour un client existant ou les autres champs pour un nouveau client.",
+ *                 @OA\Property(property="id", type="string", format="uuid", example="550e8400-e29b-41d4-a716-446655440000"),
+ *                 @OA\Property(property="titulaire", type="string", example="Mamadou Diop"),
+ *                 @OA\Property(property="nci", type="string", example="1234567890123"),
+ *                 @OA\Property(property="email", type="string", format="email", example="mapathendiaye542@gmail.com"),
+ *                 @OA\Property(property="telephone", type="string", example="+221776543210"),
+ *                 @OA\Property(property="adresse", type="string", example="123 Rue Kermel, Plateau, Dakar")
+ *             )
+ *         )
+ *     ),
+ *
+ *     @OA\Response(
+ *         response=201,
+ *         description="Compte créé avec succès",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="success", type="boolean", example=true),
+ *             @OA\Property(property="message", type="string", example="Compte créé avec succès"),
+ *             @OA\Property(property="data", ref="#/components/schemas/Compte")
+ *         )
+ *     ),
+ *
+ *     @OA\Response(
+ *         response=422,
+ *         description="Erreur de validation",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="Le client sélectionné n'existe pas."),
+ *             @OA\Property(property="errors", type="object")
+ *         )
+ *     ),
+ *
+ *     @OA\Response(
+ *         response=401,
+ *         description="Non autorisé – Token invalide ou expiré",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="Unauthenticated.")
+ *         )
+ *     ),
+ *
+ *     @OA\Response(
+ *         response=500,
+ *         description="Erreur serveur interne",
+ *         @OA\JsonContent(
+ *             @OA\Property(property="message", type="string", example="Erreur interne du serveur.")
+ *         )
+ *     )
+ * )
+ */
+
     public function store(StoreCompteRequest $request): JsonResponse
     {
         try {
