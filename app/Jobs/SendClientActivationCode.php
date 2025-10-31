@@ -3,7 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Client;
-use App\Services\BrevoSmsService;
+use App\Services\TwilioSmsService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -30,7 +30,7 @@ class SendClientActivationCode implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(BrevoSmsService $smsService): void
+    public function handle(TwilioSmsService $smsService): void
     {
         try {
             $success = $smsService->sendActivationCode(
