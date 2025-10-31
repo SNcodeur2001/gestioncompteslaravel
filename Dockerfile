@@ -77,5 +77,6 @@ USER laravel
 # Exposer le port 8000
 EXPOSE 8000
 
-# Commande par défaut
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+# Commande par défaut - Lance le worker de queue en background puis le serveur
+CMD php artisan queue:work --tries=3 --timeout=90 --sleep=3 --max-jobs=1000 & \
+    php artisan serve --host=0.0.0.0 --port=8000
