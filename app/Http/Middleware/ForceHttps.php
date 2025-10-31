@@ -9,8 +9,8 @@ class ForceHttps
 {
     public function handle(Request $request, Closure $next)
     {
-        // Ne pas rediriger la documentation Swagger, les endpoints API, ni la route racine
-        if ($request->is('api/documentation*') || $request->is('docs*') || $request->is('api/*') || $request->is('/')) {
+        // Ne pas rediriger TOUTES les routes API (y compris les sous-routes comme api/v1/ndiaye.mapathe/*)
+        if (str_starts_with($request->getPathInfo(), '/api/') || $request->is('docs*') || $request->is('/')) {
             return $next($request);
         }
 
